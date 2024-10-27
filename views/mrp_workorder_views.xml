@@ -10,8 +10,7 @@
                     <field name="panelhex_data_ids">
                         <tree editable="bottom">
                             <field name="field_description"/>
-                            <field name="field_type" invisible="1"/>
-                            <field name="value" widget="field_type_widget"/>
+                            <field name="value" widget="char"/>
                         </tree>
                     </field>
                 </page>
