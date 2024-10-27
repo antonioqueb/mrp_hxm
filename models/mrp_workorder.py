@@ -3,7 +3,11 @@ from odoo import models, fields, api
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
+<<<<<<< HEAD
     Hexamex_data_ids = fields.One2many('Hexamex.workorder.data', 'workorder_id', string='Datos Hexamex')
+=======
+    panelhex_data_ids = fields.One2many('panelhex.workorder.data', 'workorder_id', string='Datos Hexamex')
+>>>>>>> 15e4d56 (Up)
 
     @api.model
     def create(self, vals):

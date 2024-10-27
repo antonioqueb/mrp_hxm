@@ -2,7 +2,11 @@
 <odoo>
     <data>
         <report
+<<<<<<< HEAD
             id="action_report_Hexamex_production"
+=======
+            id="action_report_panelhex_production"
+>>>>>>> 15e4d56 (Up)
             string="Hexamex Production Report"
             model="mrp.production"
             report_type="qweb-pdf"

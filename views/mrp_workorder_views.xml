@@ -7,7 +7,11 @@
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
                 <page string="Hexamex Data">
+<<<<<<< HEAD
                     <field name="Hexamex_data_ids">
+=======
+                    <field name="panelhex_data_ids">
+>>>>>>> 15e4d56 (Up)
                         <tree editable="bottom">
                             <field name="name" invisible="1"/>
                             <field name="field_type" invisible="1"/>
