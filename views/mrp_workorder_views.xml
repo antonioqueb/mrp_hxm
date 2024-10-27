@@ -7,14 +7,19 @@
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
                 <page string="PanelHex Data">
-                 <field name="panelhex_data_ids">
-                    <tree editable="bottom">
-                        <field name="name" invisible="1"/>
-                        <field name="field_type" invisible="1"/>
-                        <field name="field_description"/>
-                        <field name="value"/>
-                    </tree>
-                </field>
+                    <field name="panelhex_data_ids">
+                        <tree editable="bottom">
+                            <field name="name" invisible="1"/>
+                            <field name="field_type" invisible="1"/>
+                            <field name="field_description"/>
+                            <field name="value_char" attrs="{'invisible': [('field_type', '!=', 'char')]}" widget="char"/>
+                            <field name="value_float" attrs="{'invisible': [('field_type', '!=', 'float')]}" widget="float"/>
+                            <field name="value_integer" attrs="{'invisible': [('field_type', '!=', 'integer')]}" widget="integer"/>
+                            <field name="value_selection" attrs="{'invisible': [('field_type', '!=', 'selection')]}" widget="selection"/>
+                            <field name="value_many2one" attrs="{'invisible': [('field_type', '!=', 'many2one')]}" widget="many2one"/>
+                            <field name="value_json" attrs="{'invisible': [('field_type', '!=', 'json')]}" widget="json"/>
+                        </tree>
+                    </field>
                 </page>
             </xpath>
         </field>

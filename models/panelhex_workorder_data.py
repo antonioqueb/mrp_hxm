@@ -1,5 +1,4 @@
 from odoo import models, fields, api
-import json
 
 class PanelhexWorkorderData(models.Model):
     _name = 'panelhex.workorder.data'
@@ -15,7 +14,12 @@ class PanelhexWorkorderData(models.Model):
         ('many2one', 'Relación'),
         ('json', 'JSON')
     ], string="Tipo de Campo", required=True)
-    value = fields.Char(string="Valor")
+    value_char = fields.Char(string="Valor (Texto)")
+    value_float = fields.Float(string="Valor (Decimal)")
+    value_integer = fields.Integer(string="Valor (Entero)")
+    value_selection = fields.Char(string="Valor (Selección)")
+    value_many2one = fields.Integer(string="Valor (Relación)")
+    value_json = fields.Json(string="Valor (JSON)")
 
     @api.depends('name', 'field_type')
     def _compute_field_description(self):
@@ -26,23 +30,3 @@ class PanelhexWorkorderData(models.Model):
                 record.field_description = ''
 
     field_description = fields.Char(string="Descripción del Campo", compute='_compute_field_description', store=True)
-
-    def get_value(self):
-        self.ensure_one()
-        if self.field_type == 'float':
-            return float(self.value) if self.value else 0.0
-        elif self.field_type == 'integer':
-            return int(self.value) if self.value else 0
-        elif self.field_type == 'many2one':
-            return int(self.value) if self.value else False
-        elif self.field_type == 'json':
-            return json.loads(self.value) if self.value else {}
-        else:  # char, selection
-            return self.value
-
-    def set_value(self, val):
-        self.ensure_one()
-        if self.field_type == 'json':
-            self.value = json.dumps(val)
-        else:
-            self.value = str(val)
