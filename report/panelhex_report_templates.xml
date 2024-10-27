@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_panelhex_production">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>PanelHex Production Report</h2>
+                        <div class="row mt32 mb32">
+                            <div class="col-3">
+                                <strong>Production Order:</strong>
+                                <p t-field="o.name"/>
+                            </div>
+                            <div class="col-3">
+                                <strong>Product:</strong>
+                                <p t-field="o.product_id"/>
+                            </div>
+                            <div class="col-3">
+                                <strong>Quantity:</strong>
+                                <p t-field="o.product_qty"/>
+                            </div>
+                            <div class="col-3">
+                                <strong>Date:</strong>
+                                <p t-field="o.date_planned_start"/>
+                            </div>
+                        </div>
+                        
+                        <h3>Work Order Data</h3>
+                        <t t-foreach="o.workorder_ids" t-as="workorder">
+                            <h4 t-field="workorder.name"/>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Field</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="workorder.panelhex_data_ids" t-as="data">
+                                        <tr>
+                                            <td><span t-field="data.field_description"/></td>
+                                            <td>
+                                                <t t-if="data.field_type == 'char'"><span t-field="data.value_char"/></t>
+                                                <t t-elif="data.field_type == 'float'"><span t-field="data.value_float"/></t>
+                                                <t t-elif="data.field_type == 'integer'"><span t-field="data.value_integer"/></t>
+                                                <t t-elif="data.field_type == 'selection'"><span t-field="data.value_selection"/></t>
+                                                <t t-elif="data.field_type == 'many2one'"><span t-field="data.value_many2one"/></t>
+                                                <t t-elif="data.field_type == 'json'"><span t-field="data.value_json"/></t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                        
+                        <div t-if="o.cambio_rapido" class="mt32">
+                            <h3>Cambio Rápido</h3>
+                            <p><strong>Tiempo de Cambio:</strong> <span t-field="o.tiempo_cambio"/> minutos</p>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

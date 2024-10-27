@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_panelhex_equipo_user,panelhex.equipo.user,model_panelhex_equipo,mrp.group_mrp_user,1,0,0,0
+access_panelhex_equipo_manager,panelhex.equipo.manager,model_panelhex_equipo,mrp.group_mrp_manager,1,1,1,1
+access_panelhex_workorder_data_user,panelhex.workorder.data.user,model_panelhex_workorder_data,mrp.group_mrp_user,1,1,1,0
+access_panelhex_workorder_data_manager,panelhex.workorder.data.manager,model_panelhex_workorder_data,mrp.group_mrp_manager,1,1,1,1
+access_panelhex_cambio_rapido_wizard_user,panelhex.cambio.rapido.wizard.user,model_panelhex_cambio_rapido_wizard,mrp.group_mrp_user,1,1,1,0

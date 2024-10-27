@@ -1,0 +1,1 @@
+from . import  panelhex_cambio_rapido_wizard

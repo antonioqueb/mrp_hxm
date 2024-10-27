@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="panelhex_equipo_form_view" model="ir.ui.view">
+        <field name="name">panelhex.equipo.form</field>
+        <field name="model">panelhex.equipo</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="descripcion"/>
+                    </group>
+                    <notebook>
+                        <page string="Centros de Trabajo">
+                            <field name="workcenter_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="panelhex_equipo_tree_view" model="ir.ui.view">
+        <field name="name">panelhex.equipo.tree</field>
+        <field name="model">panelhex.equipo</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="descripcion"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_panelhex_equipo" model="ir.actions.act_window">
+        <field name="name">Equipos PanelHex</field>
+        <field name="res_model">panelhex.equipo</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_panelhex_equipo" name="Equipos PanelHex" action="action_panelhex_equipo" parent="mrp.menu_mrp_configuration" sequence="100"/>
+</odoo>
