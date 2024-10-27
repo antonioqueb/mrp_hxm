@@ -2,7 +2,8 @@ from odoo import models, fields, api
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
-    equipo_id = fields.Many2one('panelhex.equipo', string='Equipo PanelHex')
+
+    panelhex_data_ids = fields.One2many('panelhex.workorder.data', 'workorder_id', string='Datos PanelHex')
 
     @api.model
     def create(self, vals):
