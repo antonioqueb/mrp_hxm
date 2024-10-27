@@ -1,1 +1,1 @@
-from . import  Hexamex_cambio_rapido_wizard
+from . import  panelhex_cambio_rapido_wizard

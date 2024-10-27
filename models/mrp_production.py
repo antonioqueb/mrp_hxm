@@ -11,7 +11,7 @@ class MrpProduction(models.Model):
         return {
             'name': 'Registrar Cambio Rápido',
             'type': 'ir.actions.act_window',
-            'res_model': 'Hexamex.cambio.rapido.wizard',
+            'res_model': 'panelhex.cambio.rapido.wizard',
             'view_mode': 'form',
             'target': 'new',
             'context': {'default_production_id': self.id}
