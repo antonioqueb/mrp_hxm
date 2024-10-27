@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="0">
-<<<<<<< HEAD
         <record id="group_Hexamex_user" model="res.groups">
-=======
         <record id="group_panelhex_user" model="res.groups">
->>>>>>> 15e4d56 (Up)
             <field name="name">Hexamex User</field>
             <field name="category_id" ref="base.module_category_manufacturing"/>
             <field name="implied_ids" eval="[(4, ref('mrp.group_mrp_user'))]"/>

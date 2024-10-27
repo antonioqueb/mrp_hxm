@@ -1,13 +1,8 @@
 from odoo import models, fields
 
-<<<<<<< HEAD
-class HexamexEquipo(models.Model):
-    _name = 'Hexamex.equipo'
-=======
 class PanelhexEquipo(models.Model):
     _name = 'panelhex.equipo'
->>>>>>> 15e4d56 (Up)
-    _description = 'Equipo Hexamex'
+    _description = 'Equipo PanelHex'
 
     name = fields.Char(string='Nombre del Equipo', required=True)
     descripcion = fields.Text(string='Descripción')

@@ -2,16 +2,12 @@
 <odoo>
     <data>
         <report
-<<<<<<< HEAD
-            id="action_report_Hexamex_production"
-=======
             id="action_report_panelhex_production"
->>>>>>> 15e4d56 (Up)
-            string="Hexamex Production Report"
+            string="PanelHex Production Report"
             model="mrp.production"
             report_type="qweb-pdf"
-            name="Hexamex_mrp_extension.report_Hexamex_production"
-            file="Hexamex_mrp_extension.report_Hexamex_production"
+            name="panelhex_mrp_extension.report_panelhex_production"
+            file="panelhex_mrp_extension.report_panelhex_production"
         />
     </data>
 </odoo>
