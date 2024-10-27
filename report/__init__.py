@@ -1,2 +1,2 @@
-from . import  panelhex_report_templates
-from . import  panelhex_reports
+from . import  Hexamex_report_templates
+from . import  Hexamex_reports

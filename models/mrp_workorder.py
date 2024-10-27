@@ -3,7 +3,7 @@ from odoo import models, fields, api
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
-    panelhex_data_ids = fields.One2many('panelhex.workorder.data', 'workorder_id', string='Datos PanelHex')
+    Hexamex_data_ids = fields.One2many('Hexamex.workorder.data', 'workorder_id', string='Datos Hexamex')
 
     @api.model
     def create(self, vals):
@@ -13,7 +13,7 @@ class MrpWorkorder(models.Model):
         return res
 
     def create_default_workorder_data(self, workorder):
-        WorkorderData = self.env['panelhex.workorder.data']
+        WorkorderData = self.env['Hexamex.workorder.data']
         workcenter_code = workorder.workcenter_id.code
         if workcenter_code == 'OCT':
             default_fields = [

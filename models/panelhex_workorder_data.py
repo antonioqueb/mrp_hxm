@@ -1,7 +1,7 @@
 from odoo import models, fields, api
 
-class PanelhexWorkorderData(models.Model):
-    _name = 'panelhex.workorder.data'
+class HexamexWorkorderData(models.Model):
+    _name = 'Hexamex.workorder.data'
     _description = 'Datos Específicos de Orden de Trabajo'
 
     workorder_id = fields.Many2one('mrp.workorder', string="Orden de Trabajo", required=True)

@@ -1,7 +1,7 @@
 from odoo import models, fields, api
 
-class PanelhexCambioRapidoWizard(models.TransientModel):
-    _name = 'panelhex.cambio.rapido.wizard'
+class HexamexCambioRapidoWizard(models.TransientModel):
+    _name = 'Hexamex.cambio.rapido.wizard'
     _description = 'Wizard para registrar cambio rápido'
 
     production_id = fields.Many2one('mrp.production', string='Orden de Producción', required=True)

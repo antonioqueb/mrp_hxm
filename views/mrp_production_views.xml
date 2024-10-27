@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="panelhex_mrp_production_form_view" model="ir.ui.view">
-        <field name="name">panelhex.mrp.production.form</field>
+    <record id="Hexamex_mrp_production_form_view" model="ir.ui.view">
+        <field name="name">Hexamex.mrp.production.form</field>
         <field name="model">mrp.production</field>
         <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
         <field name="arch" type="xml">
@@ -9,7 +9,7 @@
                 <button name="action_register_cambio_rapido" string="Registrar Cambio Rápido" type="object" class="oe_highlight" invisible="state not in ['confirmed', 'progress']"/>
             </xpath>
             <xpath expr="//notebook" position="inside">
-                <page string="PanelHex Info">
+                <page string="Hexamex Info">
                     <group>
                         <field name="cambio_rapido"/>
                         <field name="tiempo_cambio" invisible="not cambio_rapido"/>
