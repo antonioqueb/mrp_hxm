@@ -1,5 +1,4 @@
 from odoo import models, fields, api
-import json
 
 class PanelhexWorkorderData(models.Model):
     _name = 'panelhex.workorder.data'
@@ -36,35 +35,15 @@ class PanelhexWorkorderData(models.Model):
         elif self.field_type == 'many2one':
             return int(self.value) if self.value else False
         elif self.field_type == 'json':
+            import json
             return json.loads(self.value) if self.value else {}
         else:  # char, selection
             return self.value
 
     def set_value(self, val):
         self.ensure_one()
-        if self.field_type == 'float':
-            self.value = str(float(val))
-        elif self.field_type == 'integer':
-            self.value = str(int(val))
-        elif self.field_type == 'many2one':
-            self.value = str(int(val)) if val else False
-        elif self.field_type == 'json':
+        if self.field_type == 'json':
+            import json
             self.value = json.dumps(val)
-        else:  # char, selection
+        else:
             self.value = str(val)
-
-    @api.model
-    def create(self, vals):
-        if 'value' in vals and 'field_type' in vals:
-            temp = self.new(vals)
-            temp.set_value(vals['value'])
-            vals['value'] = temp.value
-        return super(PanelhexWorkorderData, self).create(vals)
-
-    def write(self, vals):
-        if 'value' in vals:
-            for record in self:
-                temp_value = vals['value']
-                record.set_value(temp_value)
-                vals['value'] = record.value
-        return super(PanelhexWorkorderData, self).write(vals)
