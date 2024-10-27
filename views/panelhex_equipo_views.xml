@@ -32,10 +32,10 @@
     </record>
 
     <record id="action_panelhex_equipo" model="ir.actions.act_window">
-        <field name="name">Equipos PanelHex</field>
+        <field name="name">Equipos Hexamex</field>
         <field name="res_model">panelhex.equipo</field>
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_panelhex_equipo" name="Equipos PanelHex" action="action_panelhex_equipo" parent="mrp.menu_mrp_configuration" sequence="100"/>
+    <menuitem id="menu_panelhex_equipo" name="Equipos Hexamex" action="action_panelhex_equipo" parent="mrp.menu_mrp_configuration" sequence="100"/>
 </odoo>

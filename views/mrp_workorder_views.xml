@@ -6,11 +6,12 @@
         <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
-                <page string="PanelHex Data">
+                <page string="Hexamex Data">
                     <field name="panelhex_data_ids">
                         <tree editable="bottom">
                             <field name="field_description"/>
-                            <field name="value" widget="char"/>
+                            <field name="field_type" invisible="1"/>
+                            <field name="value" widget="field_type_widget"/>
                         </tree>
                     </field>
                 </page>
