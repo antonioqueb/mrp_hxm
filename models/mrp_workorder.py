@@ -20,10 +20,10 @@ class MrpWorkorder(models.Model):
             default_fields = [
                 ('entrada_rollo_lote', 'char'),
                 ('entrada_rollo_proveedor', 'char'),
-                ('entrada_rollo_peso', 'float'),
-                ('entrada_rollo_gramaje', 'float'),
+                ('entrada_rollo_peso', 'char'),
+                ('entrada_rollo_gramaje', 'char'),
                 ('entrada_rollo_medidas', 'char'),
-                ('salida_num_corridas', 'integer'),
+                ('salida_num_corridas', 'char'),
                 ('salida_tipo_hexagono', 'char'),
                 ('operador', 'char'),
                 ('fecha', 'date'),
@@ -31,13 +31,13 @@ class MrpWorkorder(models.Model):
         elif workcenter_code == 'COR':
             default_fields = [
                 ('entrada_lote_bloque', 'char'),
-                ('salida_num_cortes', 'integer'),
+                ('salida_num_cortes', 'char'),
                 ('operador', 'char'),
                 ('fecha', 'date'),
             ]
         elif workcenter_code == 'PEG':
             default_fields = [
-                ('salida_num_reticulas', 'integer'),
+                ('salida_num_reticulas', 'char'),
                 ('salida_lote_tarima', 'char'),
                 ('fecha_pegado', 'date'),
                 ('operador', 'char'),
@@ -47,23 +47,23 @@ class MrpWorkorder(models.Model):
                 ('entrada_reticula_lote', 'char'),
                 ('entrada_rollo_superior_lote', 'char'),
                 ('entrada_rollo_inferior_lote', 'char'),
-                ('salida_metros_lineales', 'float'),
+                ('salida_metros_lineales', 'char'),
                 ('salida_especificacion', 'char'),
                 ('cliente', 'char'),
                 ('codigo_producto', 'char'),
-                ('merma_generada', 'float'),
-                ('kg_pegamento_utilizado', 'float'),
+                ('merma_generada', 'char'),
+                ('kg_pegamento_utilizado', 'char'),
                 ('operador', 'char'),
                 ('fecha', 'date'),
             ]
         elif workcenter_code == 'REM':
             default_fields = [
                 ('entrada_tablero_lote', 'char'),
-                ('salida_num_tarimas', 'integer'),
+                ('salida_num_tarimas', 'char'),
                 ('salida_especificacion', 'char'),
                 ('cliente', 'char'),
                 ('codigo_producto', 'char'),
-                ('merma_generada', 'float'),
+                ('merma_generada', 'char'),
                 ('operador', 'char'),
                 ('fecha', 'date'),
             ]
