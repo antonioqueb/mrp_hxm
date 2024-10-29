@@ -37,7 +37,6 @@ class MrpWorkorder(models.Model):
             default_fields = [
                 ('salida_num_reticulas', 'char'),
                 ('salida_lote_tarima', 'char'),
-                ('fecha_pegado', 'date'),
             ]
         elif workcenter_code == 'LAM':
             default_fields = [
@@ -63,7 +62,7 @@ class MrpWorkorder(models.Model):
                 ('operador', 'char'),
             ]
         else:
-            default_fields = []  # Default empty list for unknown workcenter codes..
+            default_fields = []  # Default empty list for unknown workcenter codes
 
         for field, field_type in default_fields:
             WorkorderData.create({
@@ -91,7 +90,6 @@ class PanelhexWorkorderData(models.Model):
     value_integer = fields.Integer(string='Integer Value', tracking=True)
     value_boolean = fields.Boolean(string='Boolean Value', tracking=True)
     value_many2one = fields.Many2one('res.partner', string='Relation Value', tracking=True)
-    value_date = fields.Date(string='Date Value', tracking=True)
     field_description = fields.Char(string='Field Description', compute='_compute_field_description', store=True)
     change_history = fields.Char(string='Historial de Cambios', readonly=True)
 
@@ -154,9 +152,8 @@ class PanelhexWorkorderData(models.Model):
         self.value_integer = False
         self.value_boolean = False
         self.value_many2one = False
-        self.value_date = False
 
-    @api.constrains('field_type', 'value_char', 'value_float', 'value_integer', 'value_boolean', 'value_many2one', 'value_date')
+    @api.constrains('field_type', 'value_char', 'value_float', 'value_integer', 'value_boolean', 'value_many2one')
     def _check_value_consistency(self):
         for record in self:
             if record.field_type == 'char' and record.value_char:
@@ -169,9 +166,7 @@ class PanelhexWorkorderData(models.Model):
                 continue
             elif record.field_type == 'many2one' and record.value_many2one:
                 continue
-            elif record.field_type == 'date' and record.value_date:
-                continue
-            elif not any([record.value_char, record.value_float, record.value_integer, record.value_boolean, record.value_many2one, record.value_date]):
+            elif not any([record.value_char, record.value_float, record.value_integer, record.value_boolean, record.value_many2one]):
                 # Allow empty values during creation
                 continue
             else:
@@ -189,8 +184,6 @@ class PanelhexWorkorderData(models.Model):
             return self.value_boolean
         elif self.field_type == 'many2one':
             return self.value_many2one.id if self.value_many2one else False
-        elif self.field_type == 'date':
-            return self.value_date
         return False
 
     def set_value(self, value):
@@ -205,5 +198,3 @@ class PanelhexWorkorderData(models.Model):
             self.value_boolean = bool(value)
         elif self.field_type == 'many2one':
             self.value_many2one = self.env['res.partner'].browse(int(value)) if value else False
-        elif self.field_type == 'date':
-            self.value_date = value

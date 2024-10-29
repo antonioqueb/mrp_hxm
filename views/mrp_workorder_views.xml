@@ -11,8 +11,11 @@
                         <tree editable="bottom">
                             <field name="name"/>
                             <field name="field_type"/>
-                            <field name="value_char" optional="show"/>
-                           
+                            <field name="value_char" invisible="field_type != 'char'"/>
+                            <field name="value_float" invisible="field_type != 'float'"/>
+                            <field name="value_integer" invisible="field_type != 'integer'"/>
+                            <field name="value_boolean" invisible="field_type != 'boolean'"/>
+                            <field name="value_many2one" invisible="field_type != 'many2one'"/>
                         </tree>
                     </field>
                 </page>
@@ -29,12 +32,11 @@
                     <group>
                         <field name="name"/>
                         <field name="field_type"/>
-                        <field name="value_char"/>
-                        <field name="value_float"/>
-                        <field name="value_integer"/>
-                        <field name="value_boolean"/>
-                        <field name="value_many2one"/>
-                        <field name="value_date"/>
+                        <field name="value_char" invisible="field_type != 'char'"/>
+                        <field name="value_float" invisible="field_type != 'float'"/>
+                        <field name="value_integer" invisible="field_type != 'integer'"/>
+                        <field name="value_boolean" invisible="field_type != 'boolean'"/>
+                        <field name="value_many2one" invisible="field_type != 'many2one'"/>
                     </group>
                 </sheet>
                 <div class="oe_chatter">
@@ -56,7 +58,6 @@
                 <field name="workorder_id"/>
                 <filter string="Text Fields" name="char_fields" domain="[('field_type', '=', 'char')]"/>
                 <filter string="Numeric Fields" name="numeric_fields" domain="[('field_type', 'in', ['float', 'integer'])]"/>
-                <filter string="Date Fields" name="date_fields" domain="[('field_type', '=', 'date')]"/>
                 <group expand="0" string="Group By">
                     <filter string="Field Type" name="group_by_field_type" context="{'group_by': 'field_type'}"/>
                     <filter string="Work Order" name="group_by_workorder" context="{'group_by': 'workorder_id'}"/>
