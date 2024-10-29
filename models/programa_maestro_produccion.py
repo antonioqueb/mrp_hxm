@@ -171,12 +171,9 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
                 
                 # Cálculo de la demanda pronosticada mensual
-                forecasts = self.env['sale.forecast'].search([
-                    ('product_id', '=', record.product_id.id),
-                    ('date', '>=', start_date),
-                    ('date', '<=', end_date)
-                ])
-                record.demand_forecast = sum(forecasts.mapped('forecast_qty'))
+                # Aquí deberías implementar tu propia lógica para calcular la demanda pronosticada
+                # Por ejemplo, podrías usar datos históricos de ventas o algún otro método de pronóstico
+                record.demand_forecast = self._calculate_demand_forecast(record.product_id, start_date, end_date)
 
                 # Obtener el stock previsto del mes anterior
                 previous_month_data = self.search([
@@ -199,6 +196,17 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 record.forecasted_stock = previous_stock + sum(planned_production) - record.demand_forecast
             except Exception as e:
                 raise UserError(f"Error al calcular los datos mensuales: {str(e)}")
+
+    def _calculate_demand_forecast(self, product, start_date, end_date):
+        # Implementa aquí tu lógica para calcular la demanda pronosticada
+        # Este es solo un ejemplo simple, deberías adaptarlo a tus necesidades
+        sales = self.env['sale.order.line'].search([
+            ('product_id', '=', product.id),
+            ('order_id.date_order', '>=', start_date - relativedelta(months=3)),
+            ('order_id.date_order', '<', start_date)
+        ])
+        total_sales = sum(sales.mapped('product_uom_qty'))
+        return total_sales / 3  # Promedio de ventas de los últimos 3 meses
 
     @api.model
     def create(self, vals):
