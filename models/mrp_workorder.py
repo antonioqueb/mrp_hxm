@@ -26,14 +26,14 @@ class MrpWorkorder(models.Model):
                 ('salida_num_corridas', 'char'),
                 ('salida_tipo_hexagono', 'char'),
                 ('operador', 'char'),
-                ('fecha', 'date'),
+                
             ]
         elif workcenter_code == 'COR':
             default_fields = [
                 ('entrada_lote_bloque', 'char'),
                 ('salida_num_cortes', 'char'),
                 ('operador', 'char'),
-                ('fecha', 'date'),
+                
             ]
         elif workcenter_code == 'PEG':
             default_fields = [
@@ -54,7 +54,7 @@ class MrpWorkorder(models.Model):
                 ('merma_generada', 'char'),
                 ('kg_pegamento_utilizado', 'char'),
                 ('operador', 'char'),
-                ('fecha', 'date'),
+               
             ]
         elif workcenter_code == 'REM':
             default_fields = [
@@ -65,7 +65,7 @@ class MrpWorkorder(models.Model):
                 ('codigo_producto', 'char'),
                 ('merma_generada', 'char'),
                 ('operador', 'char'),
-                ('fecha', 'date'),
+               
             ]
         else:
             default_fields = []  # Default empty list for unknown workcenter codes
@@ -90,7 +90,7 @@ class PanelhexWorkorderData(models.Model):
         ('integer', 'Integer'),
         ('boolean', 'Boolean'),
         ('many2one', 'Relation'),
-        ('date', 'Date'),
+       
     ], string='Field Type', required=True, tracking=True)
     value_char = fields.Char(string='Text Value', tracking=True)
     value_float = fields.Float(string='Number Value', tracking=True)
