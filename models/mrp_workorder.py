@@ -88,21 +88,20 @@ class PanelhexWorkorderData(models.Model):
         ('char', 'Text'),
         ('float', 'Number'),
         ('integer', 'Integer'),
-        ('boolean', 'Boolean'),  # Añadido el tipo 'boolean'
+        ('boolean', 'Boolean'),
         ('many2one', 'Relation'),
         ('date', 'Date'),
     ], string='Field Type', required=True, tracking=True)
     value_char = fields.Char(string='Text Value', tracking=True)
     value_float = fields.Float(string='Number Value', tracking=True)
     value_integer = fields.Integer(string='Integer Value', tracking=True)
-    value_boolean = fields.Boolean(string='Boolean Value', tracking=True)  # Añadido el campo value_boolean
+    value_boolean = fields.Boolean(string='Boolean Value', tracking=True)
     value_many2one = fields.Many2one('res.partner', string='Relation Value', tracking=True)
     value_date = fields.Date(string='Date Value', tracking=True)
     field_description = fields.Char(string='Field Description', compute='_compute_field_description', store=True)
 
-
-    # Campo para almacenar el historial de cambios
-    change_history = fields.Text(string='Historial de Cambios', readonly=True)
+    # Cambiamos el campo change_history a Char en lugar de Text
+    change_history = fields.Char(string='Historial de Cambios', readonly=True)
 
     @api.depends('name')
     def _compute_field_description(self):
@@ -123,7 +122,7 @@ class PanelhexWorkorderData(models.Model):
         for record in self:
             changes = []
             for field, value in vals.items():
-                if field in self._fields and self._fields[field].tracking:
+                if field in self._fields and getattr(self._fields[field], 'tracking', False):
                     old_value = record[field]
                     if old_value != value:
                         changes.append(f"{field}: {old_value} -> {value}")
@@ -136,12 +135,13 @@ class PanelhexWorkorderData(models.Model):
         return super(PanelhexWorkorderData, self).write(vals)
 
     def add_to_change_history(self, action_type, user, changes=None):
+        self.ensure_one()
         timestamp = fields.Datetime.now()
         new_history = f"{timestamp} - {action_type} por {user}"
         if changes:
             new_history += f": {changes}"
         
         if self.change_history:
-            self.change_history = f"{new_history}\n{self.change_history}"
+            self.change_history = f"{new_history}\n{self.change_history}"[:255]  # Limitamos a 255 caracteres
         else:
-            self.change_history = new_history
+            self.change_history = new_history[:255]  # Limitamos a 255 caracteres
