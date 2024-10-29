@@ -63,7 +63,7 @@ class MrpWorkorder(models.Model):
                 ('operador', 'char'),
             ]
         else:
-            default_fields = []  # Default empty list for unknown workcenter codes
+            default_fields = []  # Default empty list for unknown workcenter codes..
 
         for field, field_type in default_fields:
             WorkorderData.create({
