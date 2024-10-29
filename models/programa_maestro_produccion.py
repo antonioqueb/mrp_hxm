@@ -1,7 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError, UserError
 from dateutil.relativedelta import relativedelta
-from datetime import date
 
 class ProgramaMaestroProduccion(models.Model):
     _name = 'panelhex.programa.maestro.produccion'
@@ -100,6 +99,9 @@ class ProgramaMaestroProduccion(models.Model):
     def _create_monthly_data(self):
         self.ensure_one()
         try:
+            if not self.product_id:
+                raise UserError("No se puede crear datos mensuales sin un producto seleccionado.")
+            
             self.monthly_data.unlink()
             current_date = self.fecha_inicio
             while current_date <= self.fecha_fin:
@@ -160,6 +162,9 @@ class ProgramaMaestroProduccionMensual(models.Model):
         for record in self:
             try:
                 if not record.date or not record.product_id:
+                    record.demand_forecast = 0.0
+                    record.suggested_replenishment = 0.0
+                    record.forecasted_stock = 0.0
                     continue
 
                 start_date = record.date
