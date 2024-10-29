@@ -8,9 +8,14 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="name"/>
+                    <field name="product_id"/>
                     <field name="fecha_inicio"/>
                     <field name="fecha_fin"/>
                     <field name="estado"/>
+                    <field name="safety_stock"/>
+                    <field name="demand_forecast"/>
+                    <field name="suggested_replenishment"/>
+                    <field name="forecasted_stock"/>
                 </tree>
             </field>
         </record>
@@ -22,12 +27,13 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="action_confirmar" string="Confirmar" type="object" invisible="estado != 'borrador'" class="oe_highlight"/>
-                        <button name="action_iniciar" string="Iniciar" type="object" invisible="estado != 'confirmado'" class="oe_highlight"/>
-                        <button name="action_terminar" string="Terminar" type="object" invisible="estado != 'en_proceso'" class="oe_highlight"/>
-                        <button name="action_cancelar" string="Cancelar" type="object" invisible="estado not in ('borrador', 'confirmado', 'en_proceso')"/>
-                        <button name="action_borrador" string="Volver a Borrador" type="object" invisible="estado != 'cancelado'"/>
-                        <field name="estado" widget="statusbar" options="{'clickable': '1'}"/>
+                        <button name="action_confirmar" string="Confirmar" type="object" states="borrador" class="oe_highlight"/>
+                        <button name="action_generate_production_orders" string="Generar Órdenes de Producción" type="object" states="confirmado" class="oe_highlight"/>
+                        <button name="action_iniciar" string="Iniciar Producción" type="object" states="planificado" class="oe_highlight"/>
+                        <button name="action_terminar" string="Terminar" type="object" states="en_proceso" class="oe_highlight"/>
+                        <button name="action_cancelar" string="Cancelar" type="object" states="borrador,confirmado,planificado,en_proceso"/>
+                        <button name="action_borrador" string="Volver a Borrador" type="object" states="cancelado"/>
+                        <field name="estado" widget="statusbar" statusbar_visible="borrador,confirmado,planificado,en_proceso,terminado"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -37,19 +43,25 @@
                         </div>
                         <group>
                             <group>
+                                <field name="product_id"/>
                                 <field name="fecha_inicio"/>
                                 <field name="fecha_fin"/>
+                                <field name="safety_stock"/>
+                            </group>
+                            <group>
+                                <field name="demand_forecast"/>
+                                <field name="suggested_replenishment"/>
+                                <field name="forecasted_stock"/>
                             </group>
                         </group>
                         <notebook>
-                            <page string="Líneas de Producción">
-                                <field name="linea_ids">
-                                    <tree editable="bottom">
-                                        <field name="producto_id"/>
-                                        <field name="cantidad"/>
-                                        <field name="fecha_planificada"/>
-                                        <field name="estado"/>
-                                        <field name="notas"/>
+                            <page string="Datos Mensuales">
+                                <field name="monthly_data">
+                                    <tree>
+                                        <field name="date"/>
+                                        <field name="demand_forecast"/>
+                                        <field name="suggested_replenishment"/>
+                                        <field name="forecasted_stock"/>
                                     </tree>
                                 </field>
                             </page>
@@ -74,15 +86,19 @@
             <field name="arch" type="xml">
                 <search>
                     <field name="name"/>
+                    <field name="product_id"/>
                     <field name="fecha_inicio"/>
                     <field name="fecha_fin"/>
                     <field name="estado"/>
                     <filter string="Borradores" name="draft" domain="[('estado','=','borrador')]"/>
+                    <filter string="Confirmados" name="confirmed" domain="[('estado','=','confirmado')]"/>
+                    <filter string="Planificados" name="planned" domain="[('estado','=','planificado')]"/>
                     <filter string="En Proceso" name="in_progress" domain="[('estado','=','en_proceso')]"/>
                     <filter string="Terminados" name="done" domain="[('estado','=','terminado')]"/>
                     <group expand="0" string="Agrupar Por">
-                        <filter string="Estado" name="state" context="{'group_by':'estado'}"/>
-                        <filter string="Fecha de Inicio" name="start_date" context="{'group_by':'fecha_inicio'}"/>
+                        <filter string="Producto" name="group_by_product" context="{'group_by':'product_id'}"/>
+                        <filter string="Estado" name="group_by_state" context="{'group_by':'estado'}"/>
+                        <filter string="Fecha de Inicio" name="group_by_start_date" context="{'group_by':'fecha_inicio'}"/>
                     </group>
                 </search>
             </field>
