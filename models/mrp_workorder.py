@@ -88,15 +88,18 @@ class PanelhexWorkorderData(models.Model):
         ('char', 'Text'),
         ('float', 'Number'),
         ('integer', 'Integer'),
+        ('boolean', 'Boolean'),  # Añadido el tipo 'boolean'
         ('many2one', 'Relation'),
         ('date', 'Date'),
     ], string='Field Type', required=True, tracking=True)
     value_char = fields.Char(string='Text Value', tracking=True)
     value_float = fields.Float(string='Number Value', tracking=True)
     value_integer = fields.Integer(string='Integer Value', tracking=True)
+    value_boolean = fields.Boolean(string='Boolean Value', tracking=True)  # Añadido el campo value_boolean
     value_many2one = fields.Many2one('res.partner', string='Relation Value', tracking=True)
     value_date = fields.Date(string='Date Value', tracking=True)
     field_description = fields.Char(string='Field Description', compute='_compute_field_description', store=True)
+
 
     # Campo para almacenar el historial de cambios
     change_history = fields.Text(string='Historial de Cambios', readonly=True)
