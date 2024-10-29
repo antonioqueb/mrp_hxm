@@ -151,3 +151,29 @@ class PanelhexWorkorderData(models.Model):
             'id': res,
             'context': {'current_field_type': self.field_type},
         }
+
+    @api.onchange('field_type')
+    def _onchange_field_type(self):
+        # Clear all value fields when field_type changes
+        self.value_char = False
+        self.value_float = False
+        self.value_integer = False
+        self.value_boolean = False
+        self.value_many2one = False
+        self.value_date = False
+
+    @api.constrains('field_type', 'value_char', 'value_float', 'value_integer', 'value_boolean', 'value_many2one', 'value_date')
+    def _check_value_consistency(self):
+        for record in self:
+            if record.field_type == 'char' and not record.value_char:
+                raise models.ValidationError("Text value is required for field type 'Text'")
+            elif record.field_type == 'float' and not record.value_float:
+                raise models.ValidationError("Number value is required for field type 'Number'")
+            elif record.field_type == 'integer' and not record.value_integer:
+                raise models.ValidationError("Integer value is required for field type 'Integer'")
+            elif record.field_type == 'boolean' and record.value_boolean is None:
+                raise models.ValidationError("Boolean value is required for field type 'Boolean'")
+            elif record.field_type == 'many2one' and not record.value_many2one:
+                raise models.ValidationError("Relation value is required for field type 'Relation'")
+            elif record.field_type == 'date' and not record.value_date:
+                raise models.ValidationError("Date value is required for field type 'Date'")
