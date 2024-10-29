@@ -1,6 +1,9 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError, UserError
 from dateutil.relativedelta import relativedelta
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class ProgramaMaestroProduccion(models.Model):
     _name = 'panelhex.programa.maestro.produccion'
@@ -30,17 +33,29 @@ class ProgramaMaestroProduccion(models.Model):
     @api.depends('monthly_data.demand_forecast')
     def _compute_demand_forecast(self):
         for record in self:
-            record.demand_forecast = sum(record.monthly_data.mapped('demand_forecast'))
+            try:
+                record.demand_forecast = sum(record.monthly_data.mapped('demand_forecast'))
+            except Exception as e:
+                _logger.error(f"Error al calcular la demanda pronosticada: {str(e)}")
+                record.demand_forecast = 0.0
 
     @api.depends('monthly_data.suggested_replenishment')
     def _compute_suggested_replenishment(self):
         for record in self:
-            record.suggested_replenishment = sum(record.monthly_data.mapped('suggested_replenishment'))
+            try:
+                record.suggested_replenishment = sum(record.monthly_data.mapped('suggested_replenishment'))
+            except Exception as e:
+                _logger.error(f"Error al calcular el reabastecimiento sugerido: {str(e)}")
+                record.suggested_replenishment = 0.0
 
     @api.depends('monthly_data.forecasted_stock')
     def _compute_forecasted_stock(self):
         for record in self:
-            record.forecasted_stock = sum(record.monthly_data.mapped('forecasted_stock'))
+            try:
+                record.forecasted_stock = sum(record.monthly_data.mapped('forecasted_stock'))
+            except Exception as e:
+                _logger.error(f"Error al calcular el stock previsto: {str(e)}")
+                record.forecasted_stock = 0.0
 
     @api.constrains('fecha_inicio', 'fecha_fin')
     def _check_dates(self):
@@ -85,7 +100,8 @@ class ProgramaMaestroProduccion(models.Model):
             programa._create_monthly_data()
             return programa
         except Exception as e:
-            raise UserError(f"Error al crear el Programa Maestro de Producción: {str(e)}")
+            _logger.error(f"Error al crear el Programa Maestro de Producción: {str(e)}")
+            return super(ProgramaMaestroProduccion, self).create(vals)
 
     def write(self, vals):
         try:
@@ -94,14 +110,16 @@ class ProgramaMaestroProduccion(models.Model):
                 self._create_monthly_data()
             return res
         except Exception as e:
-            raise UserError(f"Error al actualizar el Programa Maestro de Producción: {str(e)}")
+            _logger.error(f"Error al actualizar el Programa Maestro de Producción: {str(e)}")
+            return super(ProgramaMaestroProduccion, self).write(vals)
 
     def _create_monthly_data(self):
         self.ensure_one()
         try:
             if not self.product_id:
-                raise UserError("No se puede crear datos mensuales sin un producto seleccionado.")
-            
+                _logger.warning("No se puede crear datos mensuales sin un producto seleccionado.")
+                return
+
             self.monthly_data.unlink()
             current_date = self.fecha_inicio
             while current_date <= self.fecha_fin:
@@ -118,7 +136,7 @@ class ProgramaMaestroProduccion(models.Model):
 
                 current_date = next_month
         except Exception as e:
-            raise UserError(f"Error al crear los datos mensuales: {str(e)}")
+            _logger.error(f"Error al crear los datos mensuales: {str(e)}")
 
     def action_generate_production_orders(self):
         self.ensure_one()
@@ -143,7 +161,8 @@ class ProgramaMaestroProduccion(models.Model):
 
             self.write({'estado': 'planificado'})
         except Exception as e:
-            raise UserError(f"Error al generar órdenes de producción: {str(e)}")
+            _logger.error(f"Error al generar órdenes de producción: {str(e)}")
+            raise UserError(f"Error al generar órdenes de producción. Por favor, revise el registro de errores.")
 
 class ProgramaMaestroProduccionMensual(models.Model):
     _name = 'panelhex.programa.maestro.produccion.mensual'
@@ -170,12 +189,8 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 start_date = record.date
                 end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
                 
-                # Cálculo de la demanda pronosticada mensual
-                # Aquí deberías implementar tu propia lógica para calcular la demanda pronosticada
-                # Por ejemplo, podrías usar datos históricos de ventas o algún otro método de pronóstico
                 record.demand_forecast = self._calculate_demand_forecast(record.product_id, start_date, end_date)
 
-                # Obtener el stock previsto del mes anterior
                 previous_month_data = self.search([
                     ('plan_id', '=', record.plan_id.id),
                     ('date', '<', record.date),
@@ -186,7 +201,6 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 safety_stock = record.plan_id.safety_stock
                 record.suggested_replenishment = max(0, record.demand_forecast + safety_stock - previous_stock)
 
-                # Cálculo del stock previsto (considerando la producción planificada)
                 planned_production = self.env['mrp.production'].search([
                     ('product_id', '=', record.product_id.id),
                     ('date_planned_start', '>=', start_date),
@@ -195,18 +209,23 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 ]).mapped('product_qty')
                 record.forecasted_stock = previous_stock + sum(planned_production) - record.demand_forecast
             except Exception as e:
-                raise UserError(f"Error al calcular los datos mensuales: {str(e)}")
+                _logger.error(f"Error al calcular los datos mensuales: {str(e)}")
+                record.demand_forecast = 0.0
+                record.suggested_replenishment = 0.0
+                record.forecasted_stock = 0.0
 
     def _calculate_demand_forecast(self, product, start_date, end_date):
-        # Implementa aquí tu lógica para calcular la demanda pronosticada
-        # Este es solo un ejemplo simple, deberías adaptarlo a tus necesidades
-        sales = self.env['sale.order.line'].search([
-            ('product_id', '=', product.id),
-            ('order_id.date_order', '>=', start_date - relativedelta(months=3)),
-            ('order_id.date_order', '<', start_date)
-        ])
-        total_sales = sum(sales.mapped('product_uom_qty'))
-        return total_sales / 3  # Promedio de ventas de los últimos 3 meses
+        try:
+            sales = self.env['sale.order.line'].search([
+                ('product_id', '=', product.id),
+                ('order_id.date_order', '>=', start_date - relativedelta(months=3)),
+                ('order_id.date_order', '<', start_date)
+            ])
+            total_sales = sum(sales.mapped('product_uom_qty'))
+            return total_sales / 3  # Promedio de ventas de los últimos 3 meses
+        except Exception as e:
+            _logger.error(f"Error al calcular la demanda pronosticada: {str(e)}")
+            return 0.0
 
     @api.model
     def create(self, vals):
@@ -214,7 +233,8 @@ class ProgramaMaestroProduccionMensual(models.Model):
             try:
                 vals['date'] = fields.Date.from_string(vals['date'])
             except ValueError:
-                raise UserError("Formato de fecha inválido. Use YYYY-MM-DD.")
+                _logger.error(f"Formato de fecha inválido: {vals['date']}")
+                vals['date'] = fields.Date.today()
         return super(ProgramaMaestroProduccionMensual, self).create(vals)
 
     def write(self, vals):
@@ -222,5 +242,6 @@ class ProgramaMaestroProduccionMensual(models.Model):
             try:
                 vals['date'] = fields.Date.from_string(vals['date'])
             except ValueError:
-                raise UserError("Formato de fecha inválido. Use YYYY-MM-DD.")
+                _logger.error(f"Formato de fecha inválido: {vals['date']}")
+                vals['date'] = fields.Date.today()
         return super(ProgramaMaestroProduccionMensual, self).write(vals)
