@@ -96,9 +96,18 @@ class PanelhexWorkorderData(models.Model):
     value_integer = fields.Integer(string='Integer Value', tracking=True)
     value_many2one = fields.Many2one('res.partner', string='Relation Value', tracking=True)
     value_date = fields.Date(string='Date Value', tracking=True)
+    field_description = fields.Char(string='Field Description', compute='_compute_field_description', store=True)
 
     # Campo para almacenar el historial de cambios
     change_history = fields.Text(string='Historial de Cambios', readonly=True)
+
+    @api.depends('name')
+    def _compute_field_description(self):
+        for record in self:
+            if record.name:
+                record.field_description = record.name.replace('_', ' ').title()
+            else:
+                record.field_description = ''
 
     @api.model_create_multi
     def create(self, vals_list):
