@@ -27,13 +27,13 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="action_confirmar" string="Confirmar" type="object" states="borrador" class="oe_highlight"/>
-                        <button name="action_generate_production_orders" string="Generar Órdenes de Producción" type="object" states="confirmado" class="oe_highlight"/>
-                        <button name="action_iniciar" string="Iniciar Producción" type="object" states="planificado" class="oe_highlight"/>
-                        <button name="action_terminar" string="Terminar" type="object" states="en_proceso" class="oe_highlight"/>
-                        <button name="action_cancelar" string="Cancelar" type="object" states="borrador,confirmado,planificado,en_proceso"/>
-                        <button name="action_borrador" string="Volver a Borrador" type="object" states="cancelado"/>
-                        <field name="estado" widget="statusbar" statusbar_visible="borrador,confirmado,planificado,en_proceso,terminado"/>
+                        <button name="action_confirmar" string="Confirmar" type="object" invisible="estado != 'borrador'" class="oe_highlight"/>
+                        <button name="action_generate_production_orders" string="Generar Órdenes de Producción" type="object" invisible="estado != 'confirmado'" class="oe_highlight"/>
+                        <button name="action_iniciar" string="Iniciar Producción" type="object" invisible="estado != 'planificado'" class="oe_highlight"/>
+                        <button name="action_terminar" string="Terminar" type="object" invisible="estado != 'en_proceso'" class="oe_highlight"/>
+                        <button name="action_cancelar" string="Cancelar" type="object" invisible="estado not in ('borrador', 'confirmado', 'planificado', 'en_proceso')"/>
+                        <button name="action_borrador" string="Volver a Borrador" type="object" invisible="estado != 'cancelado'"/>
+                        <field name="estado" widget="statusbar" options="{'clickable': '1'}"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -57,7 +57,7 @@
                         <notebook>
                             <page string="Datos Mensuales">
                                 <field name="monthly_data">
-                                    <tree>
+                                    <tree editable="bottom">
                                         <field name="date"/>
                                         <field name="demand_forecast"/>
                                         <field name="suggested_replenishment"/>
