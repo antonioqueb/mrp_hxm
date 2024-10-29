@@ -12,11 +12,7 @@
                             <field name="name"/>
                             <field name="field_type"/>
                             <field name="value_char" optional="show"/>
-                            <field name="value_float" optional="show"/>
-                            <field name="value_integer" optional="show"/>
-                            <field name="value_boolean" optional="show"/>
-                            <field name="value_many2one" optional="show"/>
-                            <field name="value_date" optional="show"/>
+                           
                         </tree>
                     </field>
                 </page>
