@@ -2,16 +2,16 @@ from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 
-class PlanMaestroProduccion(models.Model):
-    _name = 'panelhex.plan.maestro.produccion'
-    _description = 'Plan Maestro de Producción'
+class ProgramaMaestroProduccion(models.Model):
+    _name = 'panelhex.programa.maestro.produccion'
+    _description = 'Programa Maestro de Producción'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _order = 'date_start desc'
+    _order = 'fecha_inicio desc'
 
     name = fields.Char(string='Nombre', required=True, copy=False, tracking=True)
     product_id = fields.Many2one('product.product', string='Producto', required=True, tracking=True)
-    date_start = fields.Date(string='Fecha de Inicio', required=True, tracking=True)
-    date_end = fields.Date(string='Fecha de Fin', required=True, tracking=True)
+    fecha_inicio = fields.Date(string='Fecha de Inicio', required=True, tracking=True)
+    fecha_fin = fields.Date(string='Fecha de Fin', required=True, tracking=True)
     estado = fields.Selection([
         ('borrador', 'Borrador'),
         ('confirmado', 'Confirmado'),
@@ -24,7 +24,7 @@ class PlanMaestroProduccion(models.Model):
     demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_demand_forecast', store=True)
     suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_suggested_replenishment', store=True)
     forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_forecasted_stock', store=True)
-    monthly_data = fields.One2many('panelhex.plan.maestro.produccion.mensual', 'plan_id', string='Datos Mensuales')
+    monthly_data = fields.One2many('panelhex.programa.maestro.produccion.mensual', 'plan_id', string='Datos Mensuales')
     notas = fields.Text(string='Notas')
 
     @api.depends('monthly_data.demand_forecast')
@@ -42,10 +42,10 @@ class PlanMaestroProduccion(models.Model):
         for record in self:
             record.forecasted_stock = sum(record.monthly_data.mapped('forecasted_stock'))
 
-    @api.constrains('date_start', 'date_end')
+    @api.constrains('fecha_inicio', 'fecha_fin')
     def _check_dates(self):
         for record in self:
-            if record.date_start and record.date_end and record.date_start > record.date_end:
+            if record.fecha_inicio and record.fecha_fin and record.fecha_inicio > record.fecha_fin:
                 raise ValidationError("La fecha de inicio no puede ser posterior a la fecha de fin.")
 
     def action_confirmar(self):
@@ -65,27 +65,27 @@ class PlanMaestroProduccion(models.Model):
 
     @api.model
     def create(self, vals):
-        plan = super(PlanMaestroProduccion, self).create(vals)
-        plan._create_monthly_data()
-        return plan
+        programa = super(ProgramaMaestroProduccion, self).create(vals)
+        programa._create_monthly_data()
+        return programa
 
     def write(self, vals):
-        res = super(PlanMaestroProduccion, self).write(vals)
-        if 'date_start' in vals or 'date_end' in vals or 'product_id' in vals or 'safety_stock' in vals:
+        res = super(ProgramaMaestroProduccion, self).write(vals)
+        if 'fecha_inicio' in vals or 'fecha_fin' in vals or 'product_id' in vals or 'safety_stock' in vals:
             self._create_monthly_data()
         return res
 
     def _create_monthly_data(self):
         self.ensure_one()
         self.monthly_data.unlink()
-        current_date = self.date_start
-        while current_date <= self.date_end:
+        current_date = self.fecha_inicio
+        while current_date <= self.fecha_fin:
             next_month = current_date + relativedelta(months=1)
             month_end = next_month - relativedelta(days=1)
-            if month_end > self.date_end:
-                month_end = self.date_end
+            if month_end > self.fecha_fin:
+                month_end = self.fecha_fin
 
-            self.env['panelhex.plan.maestro.produccion.mensual'].create({
+            self.env['panelhex.programa.maestro.produccion.mensual'].create({
                 'plan_id': self.id,
                 'date': current_date,
                 'product_id': self.product_id.id,
@@ -96,7 +96,7 @@ class PlanMaestroProduccion(models.Model):
     def action_generate_production_orders(self):
         self.ensure_one()
         if self.estado != 'confirmado':
-            raise ValidationError("Solo se pueden generar órdenes de producción para planes confirmados.")
+            raise ValidationError("Solo se pueden generar órdenes de producción para programas confirmados.")
 
         for monthly_data in self.monthly_data:
             if monthly_data.suggested_replenishment > 0:
@@ -115,12 +115,12 @@ class PlanMaestroProduccion(models.Model):
 
         self.write({'estado': 'planificado'})
 
-class PlanMaestroProduccionMensual(models.Model):
-    _name = 'panelhex.plan.maestro.produccion.mensual'
-    _description = 'Datos Mensuales del Plan Maestro de Producción'
+class ProgramaMaestroProduccionMensual(models.Model):
+    _name = 'panelhex.programa.maestro.produccion.mensual'
+    _description = 'Datos Mensuales del Programa Maestro de Producción'
     _order = 'date'
 
-    plan_id = fields.Many2one('panelhex.plan.maestro.produccion', string='Plan Maestro', required=True, ondelete='cascade')
+    plan_id = fields.Many2one('panelhex.programa.maestro.produccion', string='Programa Maestro', required=True, ondelete='cascade')
     date = fields.Date(string='Mes', required=True)
     product_id = fields.Many2one('product.product', string='Producto', required=True)
     demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_monthly_data', store=True)
