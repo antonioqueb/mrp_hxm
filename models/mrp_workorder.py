@@ -99,8 +99,6 @@ class PanelhexWorkorderData(models.Model):
     value_many2one = fields.Many2one('res.partner', string='Relation Value', tracking=True)
     value_date = fields.Date(string='Date Value', tracking=True)
     field_description = fields.Char(string='Field Description', compute='_compute_field_description', store=True)
-
-    # Cambiamos el campo change_history a Char en lugar de Text
     change_history = fields.Char(string='Historial de Cambios', readonly=True)
 
     @api.depends('name')
@@ -145,3 +143,11 @@ class PanelhexWorkorderData(models.Model):
             self.change_history = f"{new_history}\n{self.change_history}"[:255]  # Limitamos a 255 caracteres
         else:
             self.change_history = new_history[:255]  # Limitamos a 255 caracteres
+
+    def get_formview_id(self, access_uid=None):
+        """ Devuelve el contexto actualizado con el tipo de campo actual """
+        res = super(PanelhexWorkorderData, self).get_formview_id(access_uid)
+        return {
+            'id': res,
+            'context': {'current_field_type': self.field_type},
+        }
