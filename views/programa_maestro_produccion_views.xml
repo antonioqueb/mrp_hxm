@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Tree View -->
+        <record id="view_programa_maestro_produccion_tree" model="ir.ui.view">
+            <field name="name">panelhex.programa.maestro.produccion.tree</field>
+            <field name="model">panelhex.programa.maestro.produccion</field>
+            <field name="arch" type="xml">
+                <tree string="Programas Maestros de Producción">
+                    <field name="name"/>
+                    <field name="fecha_inicio"/>
+                    <field name="fecha_fin"/>
+                    <field name="estado"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="view_programa_maestro_produccion_form" model="ir.ui.view">
+            <field name="name">panelhex.programa.maestro.produccion.form</field>
+            <field name="model">panelhex.programa.maestro.produccion</field>
+            <field name="arch" type="xml">
+                <form string="Programa Maestro de Producción">
+                    <header>
+                        <button name="action_confirmar" string="Confirmar" type="object" states="borrador" class="oe_highlight"/>
+                        <button name="action_iniciar" string="Iniciar" type="object" states="confirmado" class="oe_highlight"/>
+                        <button name="action_terminar" string="Terminar" type="object" states="en_proceso" class="oe_highlight"/>
+                        <button name="action_cancelar" string="Cancelar" type="object" states="borrador,confirmado,en_proceso"/>
+                        <button name="action_borrador" string="Volver a Borrador" type="object" states="cancelado"/>
+                        <field name="estado" widget="statusbar" statusbar_visible="borrador,confirmado,en_proceso,terminado"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="fecha_inicio"/>
+                                <field name="fecha_fin"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Líneas de Producción">
+                                <field name="linea_ids">
+                                    <tree editable="bottom">
+                                        <field name="producto_id"/>
+                                        <field name="cantidad"/>
+                                        <field name="fecha_planificada"/>
+                                        <field name="estado"/>
+                                        <field name="notas"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Notas">
+                                <field name="notas"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_programa_maestro_produccion_search" model="ir.ui.view">
+            <field name="name">panelhex.programa.maestro.produccion.search</field>
+            <field name="model">panelhex.programa.maestro.produccion</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Programa Maestro de Producción">
+                    <field name="name"/>
+                    <field name="fecha_inicio"/>
+                    <field name="fecha_fin"/>
+                    <field name="estado"/>
+                    <filter string="Borradores" name="draft" domain="[('estado','=','borrador')]"/>
+                    <filter string="En Proceso" name="in_progress" domain="[('estado','=','en_proceso')]"/>
+                    <filter string="Terminados" name="done" domain="[('estado','=','terminado')]"/>
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Estado" name="state" context="{'group_by':'estado'}"/>
+                        <filter string="Fecha de Inicio" name="start_date" context="{'group_by':'fecha_inicio'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_programa_maestro_produccion" model="ir.actions.act_window">
+            <field name="name">Programa Maestro de Producción</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">panelhex.programa.maestro.produccion</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_programa_maestro_produccion_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Crea tu primer Programa Maestro de Producción
+                </p>
+            </field>
+        </record>
+
+        <!-- Menu Item -->
+        <menuitem id="menu_programa_maestro_produccion"
+                  name="Programa Maestro de Producción"
+                  parent="mrp.menu_mrp_planning"
+                  action="action_programa_maestro_produccion"
+                  sequence="20"/>
+    </data>
+</odoo>
