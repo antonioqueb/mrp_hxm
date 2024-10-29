@@ -6,7 +6,7 @@
             <field name="name">panelhex.programa.maestro.produccion.tree</field>
             <field name="model">panelhex.programa.maestro.produccion</field>
             <field name="arch" type="xml">
-                <tree string="Programas Maestros de Producción">
+                <tree>
                     <field name="name"/>
                     <field name="fecha_inicio"/>
                     <field name="fecha_fin"/>
@@ -20,14 +20,14 @@
             <field name="name">panelhex.programa.maestro.produccion.form</field>
             <field name="model">panelhex.programa.maestro.produccion</field>
             <field name="arch" type="xml">
-                <form string="Programa Maestro de Producción">
+                <form>
                     <header>
-                        <button name="action_confirmar" string="Confirmar" type="object" states="borrador" class="oe_highlight"/>
-                        <button name="action_iniciar" string="Iniciar" type="object" states="confirmado" class="oe_highlight"/>
-                        <button name="action_terminar" string="Terminar" type="object" states="en_proceso" class="oe_highlight"/>
-                        <button name="action_cancelar" string="Cancelar" type="object" states="borrador,confirmado,en_proceso"/>
-                        <button name="action_borrador" string="Volver a Borrador" type="object" states="cancelado"/>
-                        <field name="estado" widget="statusbar" statusbar_visible="borrador,confirmado,en_proceso,terminado"/>
+                        <button name="action_confirmar" string="Confirmar" type="object" invisible="estado != 'borrador'" class="oe_highlight"/>
+                        <button name="action_iniciar" string="Iniciar" type="object" invisible="estado != 'confirmado'" class="oe_highlight"/>
+                        <button name="action_terminar" string="Terminar" type="object" invisible="estado != 'en_proceso'" class="oe_highlight"/>
+                        <button name="action_cancelar" string="Cancelar" type="object" invisible="estado not in ('borrador', 'confirmado', 'en_proceso')"/>
+                        <button name="action_borrador" string="Volver a Borrador" type="object" invisible="estado != 'cancelado'"/>
+                        <field name="estado" widget="statusbar" options="{'clickable': '1'}"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -72,7 +72,7 @@
             <field name="name">panelhex.programa.maestro.produccion.search</field>
             <field name="model">panelhex.programa.maestro.produccion</field>
             <field name="arch" type="xml">
-                <search string="Buscar Programa Maestro de Producción">
+                <search>
                     <field name="name"/>
                     <field name="fecha_inicio"/>
                     <field name="fecha_fin"/>
