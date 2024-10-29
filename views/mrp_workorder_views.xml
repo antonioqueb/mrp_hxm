@@ -11,16 +11,61 @@
                         <tree editable="bottom">
                             <field name="name"/>
                             <field name="field_type"/>
-                            <field name="value_char" optional="show"/>
-                            <field name="value_float" optional="show"/>
-                            <field name="value_integer" optional="show"/>
-                            <field name="value_boolean" optional="show"/>
-                            <field name="value_many2one" optional="show"/>
-                            <field name="value_date" optional="show"/>
+                            <field name="value_char" column_invisible="field_type != 'char'" optional="show"/>
+                            <field name="value_float" column_invisible="field_type != 'float'" optional="show"/>
+                            <field name="value_integer" column_invisible="field_type != 'integer'" optional="show"/>
+                            <field name="value_boolean" column_invisible="field_type != 'boolean'" optional="show"/>
+                            <field name="value_many2one" column_invisible="field_type != 'many2one'" optional="show"/>
+                            <field name="value_date" column_invisible="field_type != 'date'" optional="show"/>
                         </tree>
                     </field>
                 </page>
             </xpath>
+        </field>
+    </record>
+
+    <record id="panelhex_workorder_data_form_view" model="ir.ui.view">
+        <field name="name">panelhex.workorder.data.form</field>
+        <field name="model">panelhex.workorder.data</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="field_type"/>
+                        <field name="value_char" invisible="field_type != 'char'"/>
+                        <field name="value_float" invisible="field_type != 'float'"/>
+                        <field name="value_integer" invisible="field_type != 'integer'"/>
+                        <field name="value_boolean" invisible="field_type != 'boolean'"/>
+                        <field name="value_many2one" invisible="field_type != 'many2one'"/>
+                        <field name="value_date" invisible="field_type != 'date'"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="panelhex_workorder_data_search_view" model="ir.ui.view">
+        <field name="name">panelhex.workorder.data.search</field>
+        <field name="model">panelhex.workorder.data</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="field_type"/>
+                <field name="workorder_id"/>
+                <filter string="Text Fields" name="char_fields" domain="[('field_type', '=', 'char')]"/>
+                <filter string="Numeric Fields" name="numeric_fields" domain="[('field_type', 'in', ['float', 'integer'])]"/>
+                <filter string="Date Fields" name="date_fields" domain="[('field_type', '=', 'date')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Field Type" name="group_by_field_type" context="{'group_by': 'field_type'}"/>
+                    <filter string="Work Order" name="group_by_workorder" context="{'group_by': 'workorder_id'}"/>
+                </group>
+            </search>
         </field>
     </record>
 </odoo>

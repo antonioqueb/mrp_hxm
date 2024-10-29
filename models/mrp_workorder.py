@@ -167,9 +167,9 @@ class PanelhexWorkorderData(models.Model):
         for record in self:
             if record.field_type == 'char' and not record.value_char:
                 raise models.ValidationError("Text value is required for field type 'Text'")
-            elif record.field_type == 'float' and not record.value_float:
+            elif record.field_type == 'float' and record.value_float is False:
                 raise models.ValidationError("Number value is required for field type 'Number'")
-            elif record.field_type == 'integer' and not record.value_integer:
+            elif record.field_type == 'integer' and record.value_integer is False:
                 raise models.ValidationError("Integer value is required for field type 'Integer'")
             elif record.field_type == 'boolean' and record.value_boolean is None:
                 raise models.ValidationError("Boolean value is required for field type 'Boolean'")
@@ -177,3 +177,34 @@ class PanelhexWorkorderData(models.Model):
                 raise models.ValidationError("Relation value is required for field type 'Relation'")
             elif record.field_type == 'date' and not record.value_date:
                 raise models.ValidationError("Date value is required for field type 'Date'")
+
+    def get_value(self):
+        self.ensure_one()
+        if self.field_type == 'char':
+            return self.value_char
+        elif self.field_type == 'float':
+            return self.value_float
+        elif self.field_type == 'integer':
+            return self.value_integer
+        elif self.field_type == 'boolean':
+            return self.value_boolean
+        elif self.field_type == 'many2one':
+            return self.value_many2one.id if self.value_many2one else False
+        elif self.field_type == 'date':
+            return self.value_date
+        return False
+
+    def set_value(self, value):
+        self.ensure_one()
+        if self.field_type == 'char':
+            self.value_char = value
+        elif self.field_type == 'float':
+            self.value_float = float(value) if value else False
+        elif self.field_type == 'integer':
+            self.value_integer = int(value) if value else False
+        elif self.field_type == 'boolean':
+            self.value_boolean = bool(value)
+        elif self.field_type == 'many2one':
+            self.value_many2one = self.env['res.partner'].browse(int(value)) if value else False
+        elif self.field_type == 'date':
+            self.value_date = value
