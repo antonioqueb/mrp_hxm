@@ -32,7 +32,7 @@
                     <sheet>
                         <div class="oe_title">
                             <h1>
-                                <field name="name" readonly="1"/>
+                                <field name="name" placeholder="Nombre del Programa"/>
                             </h1>
                         </div>
                         <group>
@@ -104,9 +104,9 @@
 
         <!-- Menu Item -->
         <menuitem id="menu_programa_maestro_produccion"
-                name="Programa Maestro de Producción"
-                parent="mrp.menu_mrp_root"
-                action="action_programa_maestro_produccion"
-                sequence="20"/>
+                  name="Programa Maestro de Producción"
+                  parent="mrp.menu_mrp_root"
+                  action="action_programa_maestro_produccion"
+                  sequence="20"/>
     </data>
 </odoo>

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
@@ -9,7 +7,7 @@ class ProgramaMaestroProduccion(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'fecha_inicio desc'
 
-    name = fields.Char(string='Referencia', required=True, copy=False, readonly=True, default='Nuevo')
+    name = fields.Char(string='Nombre', required=True, copy=False, tracking=True)
     fecha_inicio = fields.Date(string='Fecha de Inicio', required=True, tracking=True)
     fecha_fin = fields.Date(string='Fecha de Fin', required=True, tracking=True)
     estado = fields.Selection([
@@ -21,12 +19,6 @@ class ProgramaMaestroProduccion(models.Model):
     ], string='Estado', default='borrador', tracking=True)
     linea_ids = fields.One2many('panelhex.programa.maestro.produccion.linea', 'programa_id', string='Líneas de Producción')
     notas = fields.Text(string='Notas')
-
-    @api.model
-    def create(self, vals):
-        if vals.get('name', 'Nuevo') == 'Nuevo':
-            vals['name'] = self.env['ir.sequence'].next_by_code('panelhex.programa.maestro.produccion') or 'Nuevo'
-        return super(ProgramaMaestroProduccion, self).create(vals)
 
     @api.constrains('fecha_inicio', 'fecha_fin')
     def _check_fechas(self):
