@@ -140,7 +140,7 @@ class PanelhexWorkorderData(models.Model):
             new_history += f": {changes}"
         
         if self.change_history:
-            self.change_history = f"{new_history}\n{self.change_history}"[:255]  # Limitamos a 255 caracteres
+            self.change_history = f"{new_history}\n{self.change_history}"[:255]  # Limitamos a 255 caracteres 
         else:
             self.change_history = new_history[:255]  # Limitamos a 255 caracteres
 
