@@ -1,5 +1,5 @@
-# models/mrp_workorder.py
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
@@ -26,21 +26,18 @@ class MrpWorkorder(models.Model):
                 ('salida_num_corridas', 'char'),
                 ('salida_tipo_hexagono', 'char'),
                 ('operador', 'char'),
-                
             ]
         elif workcenter_code == 'COR':
             default_fields = [
                 ('entrada_lote_bloque', 'char'),
                 ('salida_num_cortes', 'char'),
                 ('operador', 'char'),
-                
             ]
         elif workcenter_code == 'PEG':
             default_fields = [
                 ('salida_num_reticulas', 'char'),
                 ('salida_lote_tarima', 'char'),
                 ('fecha_pegado', 'date'),
-                ('operador', 'char'),
             ]
         elif workcenter_code == 'LAM':
             default_fields = [
@@ -54,7 +51,6 @@ class MrpWorkorder(models.Model):
                 ('merma_generada', 'char'),
                 ('kg_pegamento_utilizado', 'char'),
                 ('operador', 'char'),
-               
             ]
         elif workcenter_code == 'REM':
             default_fields = [
@@ -65,7 +61,6 @@ class MrpWorkorder(models.Model):
                 ('codigo_producto', 'char'),
                 ('merma_generada', 'char'),
                 ('operador', 'char'),
-               
             ]
         else:
             default_fields = []  # Default empty list for unknown workcenter codes
@@ -90,7 +85,6 @@ class PanelhexWorkorderData(models.Model):
         ('integer', 'Integer'),
         ('boolean', 'Boolean'),
         ('many2one', 'Relation'),
-       
     ], string='Field Type', required=True, tracking=True)
     value_char = fields.Char(string='Text Value', tracking=True)
     value_float = fields.Float(string='Number Value', tracking=True)
@@ -140,7 +134,7 @@ class PanelhexWorkorderData(models.Model):
             new_history += f": {changes}"
         
         if self.change_history:
-            self.change_history = f"{new_history}\n{self.change_history}"[:255]  # Limitamos a 255 caracteres 
+            self.change_history = f"{new_history}\n{self.change_history}"[:255]  # Limitamos a 255 caracteres
         else:
             self.change_history = new_history[:255]  # Limitamos a 255 caracteres
 
@@ -165,18 +159,23 @@ class PanelhexWorkorderData(models.Model):
     @api.constrains('field_type', 'value_char', 'value_float', 'value_integer', 'value_boolean', 'value_many2one', 'value_date')
     def _check_value_consistency(self):
         for record in self:
-            if record.field_type == 'char' and not record.value_char:
-                raise models.ValidationError("Text value is required for field type 'Text'")
-            elif record.field_type == 'float' and record.value_float is False:
-                raise models.ValidationError("Number value is required for field type 'Number'")
-            elif record.field_type == 'integer' and record.value_integer is False:
-                raise models.ValidationError("Integer value is required for field type 'Integer'")
-            elif record.field_type == 'boolean' and record.value_boolean is None:
-                raise models.ValidationError("Boolean value is required for field type 'Boolean'")
-            elif record.field_type == 'many2one' and not record.value_many2one:
-                raise models.ValidationError("Relation value is required for field type 'Relation'")
-            elif record.field_type == 'date' and not record.value_date:
-                raise models.ValidationError("Date value is required for field type 'Date'")
+            if record.field_type == 'char' and record.value_char:
+                continue
+            elif record.field_type == 'float' and record.value_float is not False:
+                continue
+            elif record.field_type == 'integer' and record.value_integer is not False:
+                continue
+            elif record.field_type == 'boolean' and record.value_boolean is not None:
+                continue
+            elif record.field_type == 'many2one' and record.value_many2one:
+                continue
+            elif record.field_type == 'date' and record.value_date:
+                continue
+            elif not any([record.value_char, record.value_float, record.value_integer, record.value_boolean, record.value_many2one, record.value_date]):
+                # Allow empty values during creation
+                continue
+            else:
+                raise ValidationError(f"Please provide a value for the field '{record.name}' of type '{record.field_type}'")
 
     def get_value(self):
         self.ensure_one()
