@@ -62,7 +62,7 @@ class MrpWorkorder(models.Model):
                 ('operador', 'char'),
             ]
         else:
-            default_fields = []  # Default empty list for unknown workcenter codes
+            default_fields = []
 
         for field, field_type in default_fields:
             WorkorderData.create({
@@ -132,12 +132,11 @@ class PanelhexWorkorderData(models.Model):
             new_history += f": {changes}"
         
         if self.change_history:
-            self.change_history = f"{new_history}\n{self.change_history}"[:255]  # Limitamos a 255 caracteres
+            self.change_history = f"{new_history}\n{self.change_history}"[:255]
         else:
-            self.change_history = new_history[:255]  # Limitamos a 255 caracteres
+            self.change_history = new_history[:255]
 
     def get_formview_id(self, access_uid=None):
-        """ Devuelve el contexto actualizado con el tipo de campo actual """
         res = super(PanelhexWorkorderData, self).get_formview_id(access_uid)
         return {
             'id': res,
@@ -146,7 +145,6 @@ class PanelhexWorkorderData(models.Model):
 
     @api.onchange('field_type')
     def _onchange_field_type(self):
-        # Clear all value fields when field_type changes
         self.value_char = False
         self.value_float = False
         self.value_integer = False
@@ -167,10 +165,9 @@ class PanelhexWorkorderData(models.Model):
             elif record.field_type == 'many2one' and record.value_many2one:
                 continue
             elif not any([record.value_char, record.value_float, record.value_integer, record.value_boolean, record.value_many2one]):
-                # Allow empty values during creation
                 continue
             else:
-                raise ValidationError(f"Please provide a value for the field '{record.name}' of type '{record.field_type}'")
+                raise ValidationError(f"Por favor, proporcione un valor para el campo '{record.name}' de tipo '{record.field_type}'")
 
     def get_value(self):
         self.ensure_one()
