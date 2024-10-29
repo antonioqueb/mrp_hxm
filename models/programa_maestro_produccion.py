@@ -1,6 +1,7 @@
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 from dateutil.relativedelta import relativedelta
+from datetime import date
 
 class ProgramaMaestroProduccion(models.Model):
     _name = 'panelhex.programa.maestro.produccion'
@@ -20,7 +21,7 @@ class ProgramaMaestroProduccion(models.Model):
         ('terminado', 'Terminado'),
         ('cancelado', 'Cancelado')
     ], string='Estado', default='borrador', tracking=True)
-    safety_stock = fields.Float(string='Stock de Seguridad', tracking=True)
+    safety_stock = fields.Float(string='Stock de Seguridad', tracking=True, default=0.0)
     demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_demand_forecast', store=True)
     suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_suggested_replenishment', store=True)
     forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_forecasted_stock', store=True)
@@ -49,71 +50,98 @@ class ProgramaMaestroProduccion(models.Model):
                 raise ValidationError("La fecha de inicio no puede ser posterior a la fecha de fin.")
 
     def action_confirmar(self):
-        self.write({'estado': 'confirmado'})
+        for record in self:
+            if record.estado != 'borrador':
+                raise UserError("Solo se pueden confirmar programas en estado borrador.")
+            record.write({'estado': 'confirmado'})
 
     def action_iniciar(self):
-        self.write({'estado': 'en_proceso'})
+        for record in self:
+            if record.estado != 'planificado':
+                raise UserError("Solo se pueden iniciar programas en estado planificado.")
+            record.write({'estado': 'en_proceso'})
 
     def action_terminar(self):
-        self.write({'estado': 'terminado'})
+        for record in self:
+            if record.estado != 'en_proceso':
+                raise UserError("Solo se pueden terminar programas en proceso.")
+            record.write({'estado': 'terminado'})
 
     def action_cancelar(self):
-        self.write({'estado': 'cancelado'})
+        for record in self:
+            if record.estado in ['terminado', 'cancelado']:
+                raise UserError("No se pueden cancelar programas terminados o ya cancelados.")
+            record.write({'estado': 'cancelado'})
 
     def action_borrador(self):
-        self.write({'estado': 'borrador'})
+        for record in self:
+            if record.estado != 'cancelado':
+                raise UserError("Solo se pueden volver a borrador los programas cancelados.")
+            record.write({'estado': 'borrador'})
 
     @api.model
     def create(self, vals):
-        programa = super(ProgramaMaestroProduccion, self).create(vals)
-        programa._create_monthly_data()
-        return programa
+        try:
+            programa = super(ProgramaMaestroProduccion, self).create(vals)
+            programa._create_monthly_data()
+            return programa
+        except Exception as e:
+            raise UserError(f"Error al crear el Programa Maestro de Producción: {str(e)}")
 
     def write(self, vals):
-        res = super(ProgramaMaestroProduccion, self).write(vals)
-        if 'fecha_inicio' in vals or 'fecha_fin' in vals or 'product_id' in vals or 'safety_stock' in vals:
-            self._create_monthly_data()
-        return res
+        try:
+            res = super(ProgramaMaestroProduccion, self).write(vals)
+            if 'fecha_inicio' in vals or 'fecha_fin' in vals or 'product_id' in vals or 'safety_stock' in vals:
+                self._create_monthly_data()
+            return res
+        except Exception as e:
+            raise UserError(f"Error al actualizar el Programa Maestro de Producción: {str(e)}")
 
     def _create_monthly_data(self):
         self.ensure_one()
-        self.monthly_data.unlink()
-        current_date = self.fecha_inicio
-        while current_date <= self.fecha_fin:
-            next_month = current_date + relativedelta(months=1)
-            month_end = next_month - relativedelta(days=1)
-            if month_end > self.fecha_fin:
-                month_end = self.fecha_fin
+        try:
+            self.monthly_data.unlink()
+            current_date = self.fecha_inicio
+            while current_date <= self.fecha_fin:
+                next_month = current_date + relativedelta(months=1)
+                month_end = next_month - relativedelta(days=1)
+                if month_end > self.fecha_fin:
+                    month_end = self.fecha_fin
 
-            self.env['panelhex.programa.maestro.produccion.mensual'].create({
-                'plan_id': self.id,
-                'date': current_date,
-                'product_id': self.product_id.id,
-            })
+                self.env['panelhex.programa.maestro.produccion.mensual'].create({
+                    'plan_id': self.id,
+                    'date': current_date,
+                    'product_id': self.product_id.id,
+                })
 
-            current_date = next_month
+                current_date = next_month
+        except Exception as e:
+            raise UserError(f"Error al crear los datos mensuales: {str(e)}")
 
     def action_generate_production_orders(self):
         self.ensure_one()
         if self.estado != 'confirmado':
-            raise ValidationError("Solo se pueden generar órdenes de producción para programas confirmados.")
+            raise UserError("Solo se pueden generar órdenes de producción para programas confirmados.")
 
-        for monthly_data in self.monthly_data:
-            if monthly_data.suggested_replenishment > 0:
-                existing_mo = self.env['mrp.production'].search([
-                    ('product_id', '=', self.product_id.id),
-                    ('date_planned_start', '=', monthly_data.date),
-                    ('origin', '=', f"PMP-{self.name}-{monthly_data.date.strftime('%Y-%m')}")
-                ])
-                if not existing_mo:
-                    self.env['mrp.production'].create({
-                        'product_id': self.product_id.id,
-                        'product_qty': monthly_data.suggested_replenishment,
-                        'date_planned_start': monthly_data.date,
-                        'origin': f"PMP-{self.name}-{monthly_data.date.strftime('%Y-%m')}",
-                    })
+        try:
+            for monthly_data in self.monthly_data:
+                if monthly_data.suggested_replenishment > 0:
+                    existing_mo = self.env['mrp.production'].search([
+                        ('product_id', '=', self.product_id.id),
+                        ('date_planned_start', '=', monthly_data.date),
+                        ('origin', '=', f"PMP-{self.name}-{monthly_data.date.strftime('%Y-%m')}")
+                    ])
+                    if not existing_mo:
+                        self.env['mrp.production'].create({
+                            'product_id': self.product_id.id,
+                            'product_qty': monthly_data.suggested_replenishment,
+                            'date_planned_start': monthly_data.date,
+                            'origin': f"PMP-{self.name}-{monthly_data.date.strftime('%Y-%m')}",
+                        })
 
-        self.write({'estado': 'planificado'})
+            self.write({'estado': 'planificado'})
+        except Exception as e:
+            raise UserError(f"Error al generar órdenes de producción: {str(e)}")
 
 class ProgramaMaestroProduccionMensual(models.Model):
     _name = 'panelhex.programa.maestro.produccion.mensual'
@@ -130,31 +158,56 @@ class ProgramaMaestroProduccionMensual(models.Model):
     @api.depends('plan_id', 'date', 'product_id')
     def _compute_monthly_data(self):
         for record in self:
-            # Cálculo de la demanda pronosticada mensual
-            start_date = record.date
-            end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
-            forecasts = self.env['sale.forecast'].search([
-                ('product_id', '=', record.product_id.id),
-                ('date', '>=', start_date),
-                ('date', '<=', end_date)
-            ])
-            record.demand_forecast = sum(forecasts.mapped('forecast_qty'))
+            try:
+                if not record.date or not record.product_id:
+                    continue
 
-            # Obtener el stock previsto del mes anterior
-            previous_month_data = self.search([
-                ('plan_id', '=', record.plan_id.id),
-                ('date', '<', record.date)
-            ], order='date desc', limit=1)
-            previous_stock = previous_month_data.forecasted_stock if previous_month_data else record.product_id.qty_available
+                start_date = record.date
+                end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
+                
+                # Cálculo de la demanda pronosticada mensual
+                forecasts = self.env['sale.forecast'].search([
+                    ('product_id', '=', record.product_id.id),
+                    ('date', '>=', start_date),
+                    ('date', '<=', end_date)
+                ])
+                record.demand_forecast = sum(forecasts.mapped('forecast_qty'))
 
-            safety_stock = record.plan_id.safety_stock
-            record.suggested_replenishment = max(0, record.demand_forecast + safety_stock - previous_stock)
+                # Obtener el stock previsto del mes anterior
+                previous_month_data = self.search([
+                    ('plan_id', '=', record.plan_id.id),
+                    ('date', '<', record.date),
+                    ('product_id', '=', record.product_id.id)
+                ], order='date desc', limit=1)
+                previous_stock = previous_month_data.forecasted_stock if previous_month_data else record.product_id.qty_available
 
-            # Cálculo del stock previsto (considerando la producción planificada)
-            planned_production = self.env['mrp.production'].search([
-                ('product_id', '=', record.product_id.id),
-                ('date_planned_start', '>=', start_date),
-                ('date_planned_start', '<', end_date),
-                ('state', 'not in', ['cancel', 'done'])
-            ]).mapped('product_qty')
-            record.forecasted_stock = previous_stock + sum(planned_production) - record.demand_forecast
+                safety_stock = record.plan_id.safety_stock
+                record.suggested_replenishment = max(0, record.demand_forecast + safety_stock - previous_stock)
+
+                # Cálculo del stock previsto (considerando la producción planificada)
+                planned_production = self.env['mrp.production'].search([
+                    ('product_id', '=', record.product_id.id),
+                    ('date_planned_start', '>=', start_date),
+                    ('date_planned_start', '<', end_date),
+                    ('state', 'not in', ['cancel', 'done'])
+                ]).mapped('product_qty')
+                record.forecasted_stock = previous_stock + sum(planned_production) - record.demand_forecast
+            except Exception as e:
+                raise UserError(f"Error al calcular los datos mensuales: {str(e)}")
+
+    @api.model
+    def create(self, vals):
+        if 'date' in vals and isinstance(vals['date'], str):
+            try:
+                vals['date'] = fields.Date.from_string(vals['date'])
+            except ValueError:
+                raise UserError("Formato de fecha inválido. Use YYYY-MM-DD.")
+        return super(ProgramaMaestroProduccionMensual, self).create(vals)
+
+    def write(self, vals):
+        if 'date' in vals and isinstance(vals['date'], str):
+            try:
+                vals['date'] = fields.Date.from_string(vals['date'])
+            except ValueError:
+                raise UserError("Formato de fecha inválido. Use YYYY-MM-DD.")
+        return super(ProgramaMaestroProduccionMensual, self).write(vals)
