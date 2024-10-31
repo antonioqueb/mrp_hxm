@@ -95,23 +95,25 @@ class ProgramaMaestroProduccion(models.Model):
 
     @api.model
     def create(self, vals):
+        programa = super(ProgramaMaestroProduccion, self).create(vals)
         try:
-            programa = super(ProgramaMaestroProduccion, self).create(vals)
             programa._create_monthly_data()
-            return programa
         except Exception as e:
-            _logger.error(f"Error al crear el Programa Maestro de Producción: {str(e)}")
-            return super(ProgramaMaestroProduccion, self).create(vals)
+            _logger.error(f"Error al crear los datos mensuales: {str(e)}")
+            # Opcional: puedes lanzar una excepción personalizada si lo consideras necesario
+            # raise UserError("Ocurrió un error al crear los datos mensuales.")
+        return programa
 
     def write(self, vals):
+        res = super(ProgramaMaestroProduccion, self).write(vals)
         try:
-            res = super(ProgramaMaestroProduccion, self).write(vals)
-            if 'fecha_inicio' in vals or 'fecha_fin' in vals or 'product_id' in vals or 'safety_stock' in vals:
+            if any(key in vals for key in ['fecha_inicio', 'fecha_fin', 'product_id', 'safety_stock']):
                 self._create_monthly_data()
-            return res
         except Exception as e:
-            _logger.error(f"Error al actualizar el Programa Maestro de Producción: {str(e)}")
-            return super(ProgramaMaestroProduccion, self).write(vals)
+            _logger.error(f"Error al actualizar los datos mensuales: {str(e)}")
+            # Opcional: puedes lanzar una excepción personalizada si lo consideras necesario
+            # raise UserError("Ocurrió un error al actualizar los datos mensuales.")
+        return res
 
     def _create_monthly_data(self):
         self.ensure_one()
@@ -162,7 +164,7 @@ class ProgramaMaestroProduccion(models.Model):
             self.write({'estado': 'planificado'})
         except Exception as e:
             _logger.error(f"Error al generar órdenes de producción: {str(e)}")
-            raise UserError(f"Error al generar órdenes de producción. Por favor, revise el registro de errores.")
+            raise UserError("Error al generar órdenes de producción. Por favor, revise el registro de errores.")
 
 class ProgramaMaestroProduccionMensual(models.Model):
     _name = 'panelhex.programa.maestro.produccion.mensual'
@@ -188,7 +190,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
 
                 start_date = record.date
                 end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
-                
+
                 record.demand_forecast = self._calculate_demand_forecast(record.product_id, start_date, end_date)
 
                 previous_month_data = self.search([
