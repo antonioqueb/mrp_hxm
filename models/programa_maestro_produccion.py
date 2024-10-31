@@ -100,8 +100,6 @@ class ProgramaMaestroProduccion(models.Model):
             programa._create_monthly_data()
         except Exception as e:
             _logger.error(f"Error al crear los datos mensuales: {str(e)}")
-            # Opcional: puedes lanzar una excepción personalizada si lo consideras necesario
-            # raise UserError("Ocurrió un error al crear los datos mensuales.")
         return programa
 
     def write(self, vals):
@@ -111,8 +109,6 @@ class ProgramaMaestroProduccion(models.Model):
                 self._create_monthly_data()
         except Exception as e:
             _logger.error(f"Error al actualizar los datos mensuales: {str(e)}")
-            # Opcional: puedes lanzar una excepción personalizada si lo consideras necesario
-            # raise UserError("Ocurrió un error al actualizar los datos mensuales.")
         return res
 
     def _create_monthly_data(self):
@@ -191,43 +187,46 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 start_date = record.date
                 end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
 
-                record.demand_forecast = self._calculate_demand_forecast(record.product_id, start_date, end_date)
+                # Calcular demanda pronosticada basada en ventas históricas
+                sales = self.env['sale.order.line'].search([
+                    ('product_id', '=', record.product_id.id),
+                    ('order_id.date_order', '>=', start_date - relativedelta(months=3)),
+                    ('order_id.date_order', '<', start_date),
+                    ('order_id.state', 'in', ['sale', 'done'])  # Asegurar que las órdenes estén confirmadas
+                ])
+                total_sales = sum(sales.mapped('product_uom_qty'))
+                record.demand_forecast = total_sales / 3 if total_sales else 0.0  # Promedio de ventas de los últimos 3 meses
 
+                # Obtener stock previsto del mes anterior
                 previous_month_data = self.search([
                     ('plan_id', '=', record.plan_id.id),
                     ('date', '<', record.date),
                     ('product_id', '=', record.product_id.id)
                 ], order='date desc', limit=1)
-                previous_stock = previous_month_data.forecasted_stock if previous_month_data else record.product_id.qty_available
+                if previous_month_data:
+                    previous_stock = previous_month_data.forecasted_stock
+                else:
+                    # Usar stock actual si no hay datos del mes anterior
+                    previous_stock = record.product_id.qty_available
 
                 safety_stock = record.plan_id.safety_stock
                 record.suggested_replenishment = max(0, record.demand_forecast + safety_stock - previous_stock)
 
+                # Calcular stock previsto
                 planned_production = self.env['mrp.production'].search([
                     ('product_id', '=', record.product_id.id),
                     ('date_planned_start', '>=', start_date),
-                    ('date_planned_start', '<', end_date),
+                    ('date_planned_start', '<=', end_date),
                     ('state', 'not in', ['cancel', 'done'])
-                ]).mapped('product_qty')
-                record.forecasted_stock = previous_stock + sum(planned_production) - record.demand_forecast
+                ])
+                total_planned_production = sum(planned_production.mapped('product_qty'))
+
+                record.forecasted_stock = previous_stock + total_planned_production - record.demand_forecast
             except Exception as e:
                 _logger.error(f"Error al calcular los datos mensuales: {str(e)}")
                 record.demand_forecast = 0.0
                 record.suggested_replenishment = 0.0
                 record.forecasted_stock = 0.0
-
-    def _calculate_demand_forecast(self, product, start_date, end_date):
-        try:
-            sales = self.env['sale.order.line'].search([
-                ('product_id', '=', product.id),
-                ('order_id.date_order', '>=', start_date - relativedelta(months=3)),
-                ('order_id.date_order', '<', start_date)
-            ])
-            total_sales = sum(sales.mapped('product_uom_qty'))
-            return total_sales / 3  # Promedio de ventas de los últimos 3 meses
-        except Exception as e:
-            _logger.error(f"Error al calcular la demanda pronosticada: {str(e)}")
-            return 0.0
 
     @api.model
     def create(self, vals):
