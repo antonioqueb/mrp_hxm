@@ -12,7 +12,7 @@
                     <field name="fecha_inicio"/>
                     <field name="fecha_fin"/>
                     <field name="estado"/>
-                    <field name="current_stock"/>
+                    <!-- Eliminado el campo 'current_stock' -->
                     <field name="safety_stock"/>
                     <field name="demand_forecast"/>
                     <field name="suggested_replenishment"/>
@@ -47,7 +47,7 @@
                                 <field name="product_id"/>
                                 <field name="fecha_inicio"/>
                                 <field name="fecha_fin"/>
-                                <field name="current_stock"/>
+                                <!-- Eliminado el campo 'current_stock' -->
                                 <field name="safety_stock"/>
                             </group>
                             <group>
