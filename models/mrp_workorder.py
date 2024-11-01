@@ -31,7 +31,7 @@ class MrpWorkorder(models.Model):
             workcenter_code = workorder.workcenter_id.code
             if workcenter_code == 'OCT':
                 default_fields = [
-                    ('Proveedor del Rollo', 'char'),
+                      ('Lote de Entrada del Rollo', 'char'),
                     ('Peso del Rollo', 'char'),
                     ('Gramaje del Rollo', 'char'),
                     ('Medidas del Rollo', 'char'),
