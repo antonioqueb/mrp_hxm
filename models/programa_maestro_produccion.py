@@ -103,16 +103,11 @@ class ProgramaMaestroProduccion(models.Model):
         current_date = self.fecha_inicio
         while current_date <= self.fecha_fin:
             next_month = current_date + relativedelta(months=1)
-            month_end = next_month - relativedelta(days=1)
-            if month_end > self.fecha_fin:
-                month_end = self.fecha_fin
-
             self.env['panelhex.programa.maestro.produccion.mensual'].create({
                 'plan_id': self.id,
                 'date': current_date,
                 'product_id': self.product_id.id,
             })
-
             current_date = next_month
 
     def action_generate_production_orders(self):
@@ -145,6 +140,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
     plan_id = fields.Many2one('panelhex.programa.maestro.produccion', string='Programa Maestro', required=True, ondelete='cascade')
     date = fields.Date(string='Mes', required=True)
     product_id = fields.Many2one('product.product', string='Producto', required=True)
+    safety_stock = fields.Float(string='Stock de Seguridad', related='plan_id.safety_stock', store=True, readonly=False)
     demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_monthly_data', store=True)
     suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_monthly_data', store=True)
     forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_monthly_data', store=True)
@@ -152,12 +148,12 @@ class ProgramaMaestroProduccionMensual(models.Model):
     incoming_qty = fields.Float(string='Cantidad entrante', compute='_compute_monthly_data', store=True)
     outgoing_qty = fields.Float(string='Cantidad saliente', compute='_compute_monthly_data', store=True)
     virtual_available = fields.Float(string='Inventario pronosticado', compute='_compute_monthly_data', store=True)
-    safety_stock = fields.Float(string='Stock de Seguridad', related='plan_id.safety_stock', store=True, readonly=False)
-
 
     @api.depends('plan_id', 'date', 'product_id')
     def _compute_monthly_data(self):
-        for record in self:
+        # Ordenar los registros por fecha para asegurar el cálculo secuencial
+        records = self.sorted(lambda r: r.date)
+        for idx, record in enumerate(records):
             if not record.date or not record.product_id:
                 record.demand_forecast = 0.0
                 record.suggested_replenishment = 0.0
@@ -184,22 +180,17 @@ class ProgramaMaestroProduccionMensual(models.Model):
             total_sales = sum(sales.mapped('product_uom_qty'))
             record.demand_forecast = total_sales / 3 if total_sales else 0.0
 
-            # Obtener stock previsto del mes anterior
-            previous_month_data = self.search([
-                ('plan_id', '=', record.plan_id.id),
-                ('date', '<', record.date),
-                ('product_id', '=', record.product_id.id)
-            ], order='date desc', limit=1)
-            if previous_month_data:
-                previous_stock = previous_month_data.forecasted_stock
-            else:
-                # Usar el inventario pronosticado del producto
+            # Obtener stock previsto
+            if idx == 0:
+                # Primer mes, usar inventario pronosticado del producto
                 product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
+                previous_stock = product.virtual_available
+
+                # Actualizar campos de stock
                 record.qty_available = product.qty_available
                 record.incoming_qty = product.incoming_qty
                 record.outgoing_qty = product.outgoing_qty
                 record.virtual_available = product.virtual_available
-                previous_stock = product.virtual_available
 
                 # Agregar logs de depuración
                 _logger.info(f"Producto: {record.product_id.display_name}")
@@ -207,15 +198,27 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 _logger.info(f"Entrante (incoming_qty): {product.incoming_qty}")
                 _logger.info(f"Saliente (outgoing_qty): {product.outgoing_qty}")
                 _logger.info(f"Inventario pronosticado (virtual_available): {product.virtual_available}")
+            else:
+                # Meses posteriores, usar el stock previsto del mes anterior
+                previous_stock = records[idx - 1].forecasted_stock
 
-            safety_stock = record.plan_id.safety_stock
-            record.suggested_replenishment = max(0, record.demand_forecast + safety_stock - previous_stock)
+            # Calcular Reabastecimiento Sugerido sin duplicar el Stock de Seguridad
+            net_stock = previous_stock - record.demand_forecast
+            record.suggested_replenishment = max(0, record.safety_stock - net_stock)
 
-            # Calcular stock previsto
-            record.forecasted_stock = previous_stock + record.suggested_replenishment - record.demand_forecast
+            # Calcular Stock Previsto
+            record.forecasted_stock = net_stock + record.suggested_replenishment
 
             # Actualizar campos de stock para los registros mensuales posteriores
             record.qty_available = record.forecasted_stock
-            record.incoming_qty = 0.0  # Si deseas estimar entradas futuras, puedes ajustar este valor
+            record.incoming_qty = record.suggested_replenishment
             record.outgoing_qty = record.demand_forecast
             record.virtual_available = record.forecasted_stock
+
+            # Agregar logs de depuración adicionales
+            _logger.info(f"Fecha: {record.date}")
+            _logger.info(f"Demanda Pronosticada: {record.demand_forecast}")
+            _logger.info(f"Stock Previo: {previous_stock}")
+            _logger.info(f"Stock Neto: {net_stock}")
+            _logger.info(f"Reabastecimiento Sugerido: {record.suggested_replenishment}")
+            _logger.info(f"Stock Previsto: {record.forecasted_stock}")
