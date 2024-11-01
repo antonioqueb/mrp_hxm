@@ -27,12 +27,18 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="action_confirmar" string="Confirmar" type="object" invisible="estado != 'borrador'" class="oe_highlight"/>
-                        <button name="action_generate_production_orders" string="Generar Órdenes de Producción" type="object" invisible="estado != 'confirmado'" class="oe_highlight"/>
-                        <button name="action_iniciar" string="Iniciar Producción" type="object" invisible="estado != 'planificado'" class="oe_highlight"/>
-                        <button name="action_terminar" string="Terminar" type="object" invisible="estado != 'en_proceso'" class="oe_highlight"/>
-                        <button name="action_cancelar" string="Cancelar" type="object" invisible="estado not in ('borrador', 'confirmado', 'planificado', 'en_proceso')"/>
-                        <button name="action_borrador" string="Volver a Borrador" type="object" invisible="estado != 'cancelado'"/>
+                        <button name="action_confirmar" string="Confirmar" type="object" 
+                                invisible="estado != 'borrador'" class="oe_highlight"/>
+                        <button name="action_generate_production_orders" string="Generar Órdenes de Producción" 
+                                type="object" invisible="estado != 'confirmado'" class="oe_highlight"/>
+                        <button name="action_iniciar" string="Iniciar Producción" type="object" 
+                                invisible="estado != 'planificado'" class="oe_highlight"/>
+                        <button name="action_terminar" string="Terminar" type="object" 
+                                invisible="estado != 'en_proceso'" class="oe_highlight"/>
+                        <button name="action_cancelar" string="Cancelar" type="object" 
+                                invisible="estado not in ('borrador', 'confirmado', 'planificado', 'en_proceso')"/>
+                        <button name="action_borrador" string="Volver a Borrador" type="object" 
+                                invisible="estado != 'cancelado'"/>
                         <field name="estado" widget="statusbar" options="{'clickable': '1'}"/>
                     </header>
                     <sheet>
@@ -42,13 +48,13 @@
                             </h1>
                         </div>
                         <group>
-                            <group>
+                            <group string="Información del Programa">
                                 <field name="product_id"/>
                                 <field name="fecha_inicio"/>
                                 <field name="fecha_fin"/>
                                 <field name="safety_stock"/>
                             </group>
-                            <group>
+                            <group string="Cálculos">
                                 <field name="demand_forecast"/>
                                 <field name="suggested_replenishment"/>
                                 <field name="forecasted_stock"/>
@@ -60,7 +66,7 @@
                                     <tree editable="bottom">
                                         <field name="date"/>
                                         <field name="demand_forecast"/>
-                                        <field name="safety_stock"/> <!-- Asegúrate de que este campo existe en el modelo -->
+                                        <field name="safety_stock"/>
                                         <field name="suggested_replenishment"/>
                                         <field name="forecasted_stock"/>
                                         <field name="qty_available"/>
