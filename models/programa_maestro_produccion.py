@@ -199,7 +199,14 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 previous_stock = records[idx - 1].forecasted_stock
 
             net_stock = previous_stock - record.demand_forecast
-            record.suggested_replenishment = max(0, record.safety_stock - net_stock)
+
+            if net_stock < record.safety_stock:
+                reabastecimiento_para_seguridad = record.safety_stock - net_stock
+            else:
+                reabastecimiento_para_seguridad = 0
+
+            record.suggested_replenishment = max(0, record.demand_forecast + reabastecimiento_para_seguridad)
+
             record.forecasted_stock = net_stock + record.suggested_replenishment
             record.qty_available = record.forecasted_stock
             record.incoming_qty = record.suggested_replenishment
