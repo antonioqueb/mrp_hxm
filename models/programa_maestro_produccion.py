@@ -192,10 +192,10 @@ class ProgramaMaestroProduccionMensual(models.Model):
                     ('product_id', '=', record.product_id.id),
                     ('order_id.date_order', '>=', start_date - relativedelta(months=3)),
                     ('order_id.date_order', '<', start_date),
-                    ('order_id.state', 'in', ['sale', 'done'])  # Asegurar que las órdenes estén confirmadas
+                    ('order_id.state', 'in', ['sale', 'done'])
                 ])
                 total_sales = sum(sales.mapped('product_uom_qty'))
-                record.demand_forecast = total_sales / 3 if total_sales else 0.0  # Promedio de ventas de los últimos 3 meses
+                record.demand_forecast = total_sales / 3 if total_sales else 0.0
 
                 # Obtener stock previsto del mes anterior
                 previous_month_data = self.search([
@@ -207,7 +207,12 @@ class ProgramaMaestroProduccionMensual(models.Model):
                     previous_stock = previous_month_data.forecasted_stock
                 else:
                     # Usar stock actual si no hay datos del mes anterior
-                    previous_stock = record.product_id.qty_available
+                    stock_quant = self.env['stock.quant'].read_group(
+                        [('product_id', '=', record.product_id.id), ('location_id.usage', '=', 'internal')],
+                        ['quantity:sum'],
+                        []
+                    )
+                    previous_stock = stock_quant[0]['quantity'] if stock_quant else 0.0
 
                 safety_stock = record.plan_id.safety_stock
                 record.suggested_replenishment = max(0, record.demand_forecast + safety_stock - previous_stock)
