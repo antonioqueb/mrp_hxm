@@ -149,11 +149,11 @@ class ProgramaMaestroProduccionMensual(models.Model):
     outgoing_qty = fields.Float(string='Cantidad saliente', compute='_compute_monthly_data', store=True)
     virtual_available = fields.Float(string='Inventario pronosticado', compute='_compute_monthly_data', store=True)
 
-    @api.depends('plan_id', 'date', 'product_id')
+    @api.depends('plan_id.fecha_inicio', 'plan_id.fecha_fin', 'date', 'product_id')
     def _compute_monthly_data(self):
         records = self.sorted(lambda r: r.date)
         for idx, record in enumerate(records):
-            if not record.date or not record.product_id:
+            if not record.date or not record.product_id or not record.plan_id.fecha_inicio or not record.plan_id.fecha_fin:
                 record.demand_forecast = 0.0
                 record.suggested_replenishment = 0.0
                 record.forecasted_stock = 0.0
@@ -163,8 +163,12 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 record.virtual_available = 0.0
                 continue
 
+            start_date = record.plan_id.fecha_inicio
+            end_date = record.plan_id.fecha_fin
+            total_months = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month) + 1
+
             today = fields.Date.context_today(record)
-            sales_start_date = today - relativedelta(months=3)
+            sales_start_date = today - relativedelta(months=total_months)
             sales_end_date = today
 
             sales = self.env['sale.order.line'].search([
@@ -174,7 +178,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 ('order_id.state', 'in', ['sale', 'done'])
             ])
             total_sales = sum(sales.mapped('product_uom_qty'))
-            record.demand_forecast = total_sales / 3 if total_sales else 0.0
+            record.demand_forecast = total_sales / total_months if total_sales else 0.0
 
             if idx == 0:
                 product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
