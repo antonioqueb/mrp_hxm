@@ -31,25 +31,20 @@ class MrpWorkorder(models.Model):
             workcenter_code = workorder.workcenter_id.code
             if workcenter_code == 'OCT':
                 default_fields = [
-                    ('Lote de Entrada del Rollo', 'char'),
                     ('Proveedor del Rollo', 'char'),
                     ('Peso del Rollo', 'char'),
                     ('Gramaje del Rollo', 'char'),
                     ('Medidas del Rollo', 'char'),
                     ('Número de Corridas', 'char'),
                     ('Tipo de Hexágono de Salida', 'char'),
-                    ('Operador', 'char'),
                 ]
             elif workcenter_code == 'COR':
                 default_fields = [
-                    ('Lote del Bloque de Entrada', 'char'),
                     ('Número de Cortes de Salida', 'char'),
-                    ('Operador', 'char'),
                 ]
             elif workcenter_code == 'PEG':
                 default_fields = [
                     ('Número de Retículas de Salida', 'char'),
-                    ('Lote de Tarima de Salida', 'char'),
                 ]
             elif workcenter_code == 'LAM':
                 default_fields = [
@@ -58,21 +53,11 @@ class MrpWorkorder(models.Model):
                     ('Lote de Rollo Inferior de Entrada', 'char'),
                     ('Metros Lineales de Salida', 'char'),
                     ('Especificación de Salida', 'char'),
-                    ('Cliente', 'char'),
-                    ('Código del Producto', 'char'),
-                    ('Merma Generada', 'char'),
-                    ('Kg de Pegamento Utilizado', 'char'),
-                    ('Operador', 'char'),
                 ]
             elif workcenter_code == 'REM':
                 default_fields = [
-                    ('Lote de Tablero de Entrada', 'char'),
                     ('Número de Tarimas de Salida', 'char'),
-                    ('Especificación de Salida', 'char'),
-                    ('Cliente', 'char'),
-                    ('Código del Producto', 'char'),
-                    ('Merma Generada', 'char'),
-                    ('Operador', 'char'),
+                    ('Especificación de Salida', 'char')
                 ]
             else:
                 default_fields = []
