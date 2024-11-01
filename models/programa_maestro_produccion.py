@@ -158,9 +158,6 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 record.forecasted_stock = 0.0
                 continue
 
-            start_date = record.date
-            end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
-
             # Obtener la fecha actual
             today = fields.Date.context_today(record)
 
@@ -168,6 +165,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
             sales_start_date = today - relativedelta(months=3)
             sales_end_date = today
 
+            # Si deseas ajustar el cálculo de la demanda pronosticada, puedes hacerlo aquí
             sales = self.env['sale.order.line'].search([
                 ('product_id', '=', record.product_id.id),
                 ('order_id.date_order', '>=', sales_start_date),
@@ -186,37 +184,19 @@ class ProgramaMaestroProduccionMensual(models.Model):
             if previous_month_data:
                 previous_stock = previous_month_data.forecasted_stock
             else:
-                # Usar stock actual si no hay datos del mes anterior
-                company_id = self.env.company.id
-                stock_quant = self.env['stock.quant'].read_group(
-                    [('product_id', '=', record.product_id.id),
-                     ('location_id.usage', '=', 'internal'),
-                     ('company_id', '=', company_id)],
-                    ['quantity', 'reserved_quantity'],
-                    []
-                )
-                if stock_quant:
-                    available_quantity = stock_quant[0]['quantity'] - stock_quant[0]['reserved_quantity']
-                    previous_stock = available_quantity
-                else:
-                    previous_stock = 0.0
+                # Usar el inventario pronosticado del producto
+                product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
+                previous_stock = product.virtual_available
 
                 # Agregar logs de depuración
-                _logger.info(f"Producto: {record.product_id.name}")
-                _logger.info(f"Stock actual (quantity): {stock_quant[0]['quantity'] if stock_quant else 'No data'}")
-                _logger.info(f"Stock reservado (reserved_quantity): {stock_quant[0]['reserved_quantity'] if stock_quant else 'No data'}")
-                _logger.info(f"Stock disponible (available_quantity): {previous_stock}")
+                _logger.info(f"Producto: {record.product_id.display_name}")
+                _logger.info(f"A la mano (qty_available): {product.qty_available}")
+                _logger.info(f"Entrante (incoming_qty): {product.incoming_qty}")
+                _logger.info(f"Saliente (outgoing_qty): {product.outgoing_qty}")
+                _logger.info(f"Inventario pronosticado (virtual_available): {product.virtual_available}")
 
             safety_stock = record.plan_id.safety_stock
             record.suggested_replenishment = max(0, record.demand_forecast + safety_stock - previous_stock)
 
             # Calcular stock previsto
-            planned_production = self.env['mrp.production'].search([
-                ('product_id', '=', record.product_id.id),
-                ('date_deadline', '>=', start_date),
-                ('date_deadline', '<=', end_date),
-                ('state', 'not in', ['cancel', 'done'])
-            ])
-            total_planned_production = sum(planned_production.mapped('product_qty'))
-
-            record.forecasted_stock = previous_stock + total_planned_production - record.demand_forecast
+            record.forecasted_stock = previous_stock + record.suggested_replenishment - record.demand_forecast
