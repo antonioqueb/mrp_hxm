@@ -24,6 +24,7 @@ class ProgramaMaestroProduccion(models.Model):
         ('cancelado', 'Cancelado')
     ], string='Estado', default='borrador', tracking=True)
     safety_stock = fields.Float(string='Stock de Seguridad', tracking=True, default=0.0)
+    current_stock = fields.Float(string='Stock Actual', tracking=True, default=0.0)
     demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_demand_forecast', store=True)
     suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_suggested_replenishment', store=True)
     forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_forecasted_stock', store=True)
@@ -105,7 +106,7 @@ class ProgramaMaestroProduccion(models.Model):
     def write(self, vals):
         res = super(ProgramaMaestroProduccion, self).write(vals)
         try:
-            if any(key in vals for key in ['fecha_inicio', 'fecha_fin', 'product_id', 'safety_stock']):
+            if any(key in vals for key in ['fecha_inicio', 'fecha_fin', 'product_id', 'safety_stock', 'current_stock']):
                 self._create_monthly_data()
         except Exception as e:
             _logger.error(f"Error al actualizar los datos mensuales: {str(e)}")
@@ -174,7 +175,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
     suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_monthly_data', store=True)
     forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_monthly_data', store=True)
 
-    @api.depends('plan_id', 'date', 'product_id')
+    @api.depends('plan_id', 'date', 'product_id', 'plan_id.current_stock')
     def _compute_monthly_data(self):
         for record in self:
             try:
@@ -206,13 +207,8 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 if previous_month_data:
                     previous_stock = previous_month_data.forecasted_stock
                 else:
-                    # Usar stock actual si no hay datos del mes anterior
-                    stock_quant = self.env['stock.quant'].read_group(
-                        [('product_id', '=', record.product_id.id), ('location_id.usage', '=', 'internal')],
-                        ['quantity:sum'],
-                        []
-                    )
-                    previous_stock = stock_quant[0]['quantity'] if stock_quant else 0.0
+                    # Usar el stock actual ingresado en el plan
+                    previous_stock = record.plan_id.current_stock
 
                 safety_stock = record.plan_id.safety_stock
                 record.suggested_replenishment = max(0, record.demand_forecast + safety_stock - previous_stock)
