@@ -161,6 +161,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 record.incoming_qty = 0.0
                 record.outgoing_qty = 0.0
                 record.virtual_available = 0.0
+                _logger.info(f"Registro {idx}: Datos incompletos, estableciendo todos los valores a 0.0")
                 continue
 
             start_date = record.plan_id.fecha_inicio
@@ -179,6 +180,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
             ])
             total_sales = sum(sales.mapped('product_uom_qty'))
             record.demand_forecast = total_sales / total_months if total_sales else 0.0
+            _logger.info(f"Registro {idx}: Total ventas: {total_sales}, Meses: {total_months}, Demanda Pronosticada: {record.demand_forecast}")
 
             if idx == 0:
                 product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
@@ -188,11 +190,11 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 record.outgoing_qty = product.outgoing_qty
                 record.virtual_available = product.virtual_available
 
-                _logger.info(f"Producto: {record.product_id.display_name}")
-                _logger.info(f"A la mano (qty_available): {product.qty_available}")
-                _logger.info(f"Entrante (incoming_qty): {product.incoming_qty}")
-                _logger.info(f"Saliente (outgoing_qty): {product.outgoing_qty}")
-                _logger.info(f"Inventario pronosticado (virtual_available): {product.virtual_available}")
+                _logger.info(f"Registro {idx}: Producto: {record.product_id.display_name}")
+                _logger.info(f"Registro {idx}: A la mano (qty_available): {product.qty_available}")
+                _logger.info(f"Registro {idx}: Entrante (incoming_qty): {product.incoming_qty}")
+                _logger.info(f"Registro {idx}: Saliente (outgoing_qty): {product.outgoing_qty}")
+                _logger.info(f"Registro {idx}: Inventario pronosticado (virtual_available): {product.virtual_available}")
             else:
                 previous_stock = records[idx - 1].forecasted_stock
 
@@ -204,9 +206,9 @@ class ProgramaMaestroProduccionMensual(models.Model):
             record.outgoing_qty = record.demand_forecast
             record.virtual_available = record.forecasted_stock
 
-            _logger.info(f"Fecha: {record.date}")
-            _logger.info(f"Demanda Pronosticada: {record.demand_forecast}")
-            _logger.info(f"Stock Previo: {previous_stock}")
-            _logger.info(f"Stock Neto: {net_stock}")
-            _logger.info(f"Reabastecimiento Sugerido: {record.suggested_replenishment}")
-            _logger.info(f"Stock Previsto: {record.forecasted_stock}")
+            _logger.info(f"Registro {idx}: Fecha: {record.date}")
+            _logger.info(f"Registro {idx}: Stock Previo: {previous_stock}")
+            _logger.info(f"Registro {idx}: Demanda Pronosticada: {record.demand_forecast}")
+            _logger.info(f"Registro {idx}: Stock Neto: {net_stock}")
+            _logger.info(f"Registro {idx}: Reabastecimiento Sugerido: {record.suggested_replenishment}")
+            _logger.info(f"Registro {idx}: Stock Previsto: {record.forecasted_stock}")
