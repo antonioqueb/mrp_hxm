@@ -161,11 +161,17 @@ class ProgramaMaestroProduccionMensual(models.Model):
             start_date = record.date
             end_date = start_date + relativedelta(months=1) - relativedelta(days=1)
 
-            # Calcular demanda pronosticada basada en ventas históricas
+            # Obtener la fecha actual
+            today = fields.Date.context_today(record)
+
+            # Calcular demanda pronosticada basada en ventas históricas de los últimos 3 meses antes de hoy
+            sales_start_date = today - relativedelta(months=3)
+            sales_end_date = today
+
             sales = self.env['sale.order.line'].search([
                 ('product_id', '=', record.product_id.id),
-                ('order_id.date_order', '>=', start_date - relativedelta(months=3)),
-                ('order_id.date_order', '<', start_date),
+                ('order_id.date_order', '>=', sales_start_date),
+                ('order_id.date_order', '<=', sales_end_date),
                 ('order_id.state', 'in', ['sale', 'done'])
             ])
             total_sales = sum(sales.mapped('product_uom_qty'))
@@ -214,10 +220,3 @@ class ProgramaMaestroProduccionMensual(models.Model):
             total_planned_production = sum(planned_production.mapped('product_qty'))
 
             record.forecasted_stock = previous_stock + total_planned_production - record.demand_forecast
-
-    @api.model
-    def create(self, vals):
-        return super(ProgramaMaestroProduccionMensual, self).create(vals)
-
-    def write(self, vals):
-        return super(ProgramaMaestroProduccionMensual, self).write(vals)
