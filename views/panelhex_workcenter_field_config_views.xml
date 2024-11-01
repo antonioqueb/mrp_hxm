@@ -1,0 +1,39 @@
+<!-- views/panelhex_workcenter_field_config_views.xml -->
+<odoo>
+    <record id="view_workcenter_field_config_tree" model="ir.ui.view">
+        <field name="name">workcenter.field.config.tree</field>
+        <field name="model">panelhex.workcenter.field.config</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="workcenter_id"/>
+                <field name="field_name"/>
+                <field name="field_type"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_workcenter_field_config_form" model="ir.ui.view">
+        <field name="name">workcenter.field.config.form</field>
+        <field name="model">panelhex.workcenter.field.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="workcenter_id"/>
+                        <field name="field_name"/>
+                        <field name="field_type"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_workcenter_field_config" model="ir.actions.act_window">
+        <field name="name">Configuración de Campos</field>
+        <field name="res_model">panelhex.workcenter.field.config</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_workcenter_field_config" name="Configuración de Campos"
+              parent="mrp.menu_mrp_configuration" action="action_workcenter_field_config"/>
+</odoo>

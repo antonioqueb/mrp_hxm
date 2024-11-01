@@ -1,0 +1,11 @@
+<!-- data/panelhex_workcenter_field_config_data.xml -->
+<odoo>
+    <!-- Configuraciones para OCT -->
+    <record id="config_oct_1" model="panelhex.workcenter.field.config">
+        <field name="workcenter_id" ref="mrp.workcenter_oct"/>
+        <field name="field_name">entrada_rollo_lote</field>
+        <field name="field_type">char</field>
+    </record>
+    <!-- Agregar más registros para cada campo y centro de trabajo -->
+    <!-- Repite para los demás códigos de centro de trabajo (COR, PEG, LAM, REM) -->
+</odoo>

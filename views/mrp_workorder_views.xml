@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="panelhex_mrp_workorder_form_view" model="ir.ui.view">
         <field name="name">panelhex.mrp.workorder.form</field>
@@ -6,20 +5,39 @@
         <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
-                <page string="Hexamex Data">
+                <page string="Datos Hexamex">
                     <field name="panelhex_data_ids">
                         <tree editable="bottom">
                             <field name="name"/>
-                            <field name="field_type"/>
-                            <field name="value_char" invisible="field_type != 'char'"/>
-                            <field name="value_float" invisible="field_type != 'float'"/>
-                            <field name="value_integer" invisible="field_type != 'integer'"/>
-                            <field name="value_boolean" invisible="field_type != 'boolean'"/>
-                            <field name="value_many2one" invisible="field_type != 'many2one'"/>
+                            <field name="value"/>
                         </tree>
+                        <form>
+                            <sheet>
+                                <group>
+                                    <field name="name" readonly="1"/>
+                                    <field name="value"/>
+                                </group>
+                            </sheet>
+                            <div class="oe_chatter">
+                                <field name="message_follower_ids"/>
+                                <field name="activity_ids"/>
+                                <field name="message_ids"/>
+                            </div>
+                        </form>
                     </field>
                 </page>
             </xpath>
+        </field>
+    </record>
+
+    <record id="panelhex_workorder_data_tree_view" model="ir.ui.view">
+        <field name="name">panelhex.workorder.data.tree</field>
+        <field name="model">panelhex.workorder.data</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="value"/>
+            </tree>
         </field>
     </record>
 
@@ -30,13 +48,8 @@
             <form>
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="field_type"/>
-                        <field name="value_char" invisible="field_type != 'char'"/>
-                        <field name="value_float" invisible="field_type != 'float'"/>
-                        <field name="value_integer" invisible="field_type != 'integer'"/>
-                        <field name="value_boolean" invisible="field_type != 'boolean'"/>
-                        <field name="value_many2one" invisible="field_type != 'many2one'"/>
+                        <field name="name" readonly="1"/>
+                        <field name="value"/>
                     </group>
                 </sheet>
                 <div class="oe_chatter">
@@ -45,24 +58,6 @@
                     <field name="message_ids"/>
                 </div>
             </form>
-        </field>
-    </record>
-
-    <record id="panelhex_workorder_data_search_view" model="ir.ui.view">
-        <field name="name">panelhex.workorder.data.search</field>
-        <field name="model">panelhex.workorder.data</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="name"/>
-                <field name="field_type"/>
-                <field name="workorder_id"/>
-                <filter string="Text Fields" name="char_fields" domain="[('field_type', '=', 'char')]"/>
-                <filter string="Numeric Fields" name="numeric_fields" domain="[('field_type', 'in', ['float', 'integer'])]"/>
-                <group expand="0" string="Group By">
-                    <filter string="Field Type" name="group_by_field_type" context="{'group_by': 'field_type'}"/>
-                    <filter string="Work Order" name="group_by_workorder" context="{'group_by': 'workorder_id'}"/>
-                </group>
-            </search>
         </field>
     </record>
 </odoo>

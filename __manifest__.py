@@ -16,6 +16,7 @@
         'views/mrp_production_views.xml',
         'views/panelhex_equipo_views.xml',
         'views/programa_maestro_produccion_views.xml',
+        'views/panelhex_workcenter_field_config_views.xml',
         'wizards/panelhex_cambio_rapido_wizard_views.xml',
         'report/panelhex_reports.xml',
         'report/panelhex_report_templates.xml',
