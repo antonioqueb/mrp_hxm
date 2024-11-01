@@ -8,7 +8,7 @@
     """,
     'author': 'ALPHAQUEB CONSULTING SAS',
     'website': 'https://alphaqueb.com',
-    'depends': ['base','mrp'],
+    'depends': ['base','mrp','sale',],
     'data': [
         'security/panelhex_security.xml',
         'security/ir.model.access.csv',
