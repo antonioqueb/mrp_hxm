@@ -108,6 +108,50 @@
             </field>
         </record>
 
+        <!-- Kanban View -->
+        <record id="view_programa_maestro_produccion_kanban" model="ir.ui.view">
+            <field name="name">panelhex.programa.maestro.produccion.kanban</field>
+            <field name="model">panelhex.programa.maestro.produccion</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="fecha_inicio"/>
+                    <field name="fecha_fin"/>
+                    <field name="estado"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)}">
+                                <div class="oe_kanban_details">
+                                    <strong><field name="name"/></strong>
+                                    <div><field name="product_id"/></div>
+                                    <div><field name="fecha_inicio"/></div>
+                                    <div><field name="fecha_fin"/></div>
+                                    <div class="oe_kanban_footer">
+                                        <span><field name="estado"/></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Graph View -->
+        <record id="view_programa_maestro_produccion_graph" model="ir.ui.view">
+            <field name="name">panelhex.programa.maestro.produccion.graph</field>
+            <field name="model">panelhex.programa.maestro.produccion.mensual</field>
+            <field name="arch" type="xml">
+                <graph string="Programa Maestro de Producción" type="bar">
+                    <field name="date" interval="month"/>
+                    <field name="suggested_replenishment" type="measure"/>
+                    <field name="demand_forecast" type="measure"/>
+                    <field name="forecasted_stock" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
         <!-- Search View -->
         <record id="view_programa_maestro_produccion_search" model="ir.ui.view">
             <field name="name">panelhex.programa.maestro.produccion.search</field>
@@ -138,7 +182,7 @@
             <field name="name">Programa Maestro de Producción</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">panelhex.programa.maestro.produccion</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">kanban,tree,form,graph</field>
             <field name="search_view_id" ref="view_programa_maestro_produccion_search"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
