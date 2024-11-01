@@ -148,6 +148,10 @@ class ProgramaMaestroProduccionMensual(models.Model):
     demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_monthly_data', store=True)
     suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_monthly_data', store=True)
     forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_monthly_data', store=True)
+    qty_available = fields.Float(string='Cantidad a mano', compute='_compute_monthly_data', store=True)
+    incoming_qty = fields.Float(string='Cantidad entrante', compute='_compute_monthly_data', store=True)
+    outgoing_qty = fields.Float(string='Cantidad saliente', compute='_compute_monthly_data', store=True)
+    virtual_available = fields.Float(string='Inventario pronosticado', compute='_compute_monthly_data', store=True)
 
     @api.depends('plan_id', 'date', 'product_id')
     def _compute_monthly_data(self):
@@ -156,6 +160,10 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 record.demand_forecast = 0.0
                 record.suggested_replenishment = 0.0
                 record.forecasted_stock = 0.0
+                record.qty_available = 0.0
+                record.incoming_qty = 0.0
+                record.outgoing_qty = 0.0
+                record.virtual_available = 0.0
                 continue
 
             # Obtener la fecha actual
@@ -165,7 +173,6 @@ class ProgramaMaestroProduccionMensual(models.Model):
             sales_start_date = today - relativedelta(months=3)
             sales_end_date = today
 
-            # Si deseas ajustar el cálculo de la demanda pronosticada, puedes hacerlo aquí
             sales = self.env['sale.order.line'].search([
                 ('product_id', '=', record.product_id.id),
                 ('order_id.date_order', '>=', sales_start_date),
@@ -186,6 +193,10 @@ class ProgramaMaestroProduccionMensual(models.Model):
             else:
                 # Usar el inventario pronosticado del producto
                 product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
+                record.qty_available = product.qty_available
+                record.incoming_qty = product.incoming_qty
+                record.outgoing_qty = product.outgoing_qty
+                record.virtual_available = product.virtual_available
                 previous_stock = product.virtual_available
 
                 # Agregar logs de depuración
@@ -200,3 +211,9 @@ class ProgramaMaestroProduccionMensual(models.Model):
 
             # Calcular stock previsto
             record.forecasted_stock = previous_stock + record.suggested_replenishment - record.demand_forecast
+
+            # Actualizar campos de stock para los registros mensuales posteriores
+            record.qty_available = record.forecasted_stock
+            record.incoming_qty = 0.0  # Si deseas estimar entradas futuras, puedes ajustar este valor
+            record.outgoing_qty = record.demand_forecast
+            record.virtual_available = record.forecasted_stock
