@@ -109,59 +109,60 @@
         </record>
 
         <!-- Kanban View with Improved Display -->
-       <record id="view_programa_maestro_produccion_kanban" model="ir.ui.view">
-        <field name="name">panelhex.programa.maestro.produccion.kanban</field>
-        <field name="model">panelhex.programa.maestro.produccion</field>
-        <field name="arch" type="xml">
-            <kanban>
-                <field name="name"/>
-                <field name="product_id"/>
-                <field name="fecha_inicio"/>
-                <field name="fecha_fin"/>
-                <field name="estado"/>
-                <field name="demand_forecast"/>
-                <field name="suggested_replenishment"/>
-                <field name="forecasted_stock"/>
-                <templates>
-                    <t t-name="kanban-box">
-                        <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)}">
-                            <div class="oe_kanban_details">
-                                <div class="oe_kanban_content">
-                                    <strong><field name="name"/></strong>
-                                    <div class="oe_kanban_record_title">
-                                        <field name="product_id" widget="badge"/>
+        <record id="view_programa_maestro_produccion_kanban" model="ir.ui.view">
+            <field name="name">panelhex.programa.maestro.produccion.kanban</field>
+            <field name="model">panelhex.programa.maestro.produccion</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="fecha_inicio"/>
+                    <field name="fecha_fin"/>
+                    <field name="estado"/>
+                    <field name="demand_forecast"/>
+                    <field name="suggested_replenishment"/>
+                    <field name="forecasted_stock"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)}">
+                                <div class="oe_kanban_details">
+                                    <div class="oe_kanban_content">
+                                        <strong><field name="name"/></strong>
+                                        <div class="oe_kanban_record_title">
+                                            <field name="product_id" widget="badge"/>
+                                        </div>
+                                        <div class="oe_kanban_indicators">
+                                            <div class="o_indicator">
+                                                <i class="fa fa-calendar me-1"></i>
+                                                <span><field name="fecha_inicio"/> - <field name="fecha_fin"/></span>
+                                            </div>
+                                            <div class="o_indicator">
+                                                <i class="fa fa-bar-chart me-1"></i>
+                                                <span>Demanda: <field name="demand_forecast"/></span>
+                                            </div>
+                                            <div class="o_indicator">
+                                                <i class="fa fa-refresh me-1"></i>
+                                                <span>Reabastecimiento: <field name="suggested_replenishment"/></span>
+                                            </div>
+                                            <div class="o_indicator">
+                                                <i class="fa fa-cubes me-1"></i>
+                                                <span>Stock Previsto: <field name="forecasted_stock"/></span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="oe_kanban_indicators">
-                                        <div class="o_indicator">
-                                            <i class="fa fa-calendar me-3"></i>
-                                            <span><field name="fecha_inicio"/> - <field name="fecha_fin"/></span>
-                                        </div>
-                                        <div class="o_indicator">
-                                            <i class="fa fa-bar-chart me-3"></i>
-                                            <span>Demanda: <field name="demand_forecast"/></span>
-                                        </div>
-                                        <div class="o_indicator">
-                                            <i class="fa fa-refresh me-3"></i>
-                                            <span>Reabastecimiento: <field name="suggested_replenishment"/></span>
-                                        </div>
-                                        <div class="o_indicator">
-                                            <i class="fa fa-cubes me-3"></i>
-                                            <span>Stock Previsto: <field name="forecasted_stock"/></span>
-                                        </div>
+                                    <div class="oe_kanban_footer">
+                                        <span class="oe_kanban_status me-1">
+                                            <field name="estado"/>
+                                        </span>
                                     </div>
-                                </div>
-                                <div class="oe_kanban_footer">
-                                    <span class="oe_kanban_status">
-                                        <field name="estado"/>
-                                    </span>
                                 </div>
                             </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
-        </field>
-    </record>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
 
 
         <!-- Graph View -->
