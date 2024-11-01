@@ -207,12 +207,25 @@ class ProgramaMaestroProduccionMensual(models.Model):
                     previous_stock = previous_month_data.forecasted_stock
                 else:
                     # Usar stock actual si no hay datos del mes anterior
+                    company_id = self.env.company.id
                     stock_quant = self.env['stock.quant'].read_group(
-                        [('product_id', '=', record.product_id.id), ('location_id.usage', '=', 'internal')],
-                        ['quantity:sum'],
+                        [('product_id', '=', record.product_id.id),
+                         ('location_id.usage', '=', 'internal'),
+                         ('company_id', '=', company_id)],
+                        ['quantity', 'reserved_quantity'],
                         []
                     )
-                    previous_stock = stock_quant[0]['quantity'] if stock_quant else 0.0
+                    if stock_quant:
+                        available_quantity = stock_quant[0]['quantity'] - stock_quant[0]['reserved_quantity']
+                        previous_stock = available_quantity
+                    else:
+                        previous_stock = 0.0
+
+                    # Agregar logs de depuración
+                    _logger.info(f"Producto: {record.product_id.name}")
+                    _logger.info(f"Stock actual (quantity): {stock_quant[0]['quantity'] if stock_quant else 'No data'}")
+                    _logger.info(f"Stock reservado (reserved_quantity): {stock_quant[0]['reserved_quantity'] if stock_quant else 'No data'}")
+                    _logger.info(f"Stock disponible (available_quantity): {previous_stock}")
 
                 safety_stock = record.plan_id.safety_stock
                 record.suggested_replenishment = max(0, record.demand_forecast + safety_stock - previous_stock)
