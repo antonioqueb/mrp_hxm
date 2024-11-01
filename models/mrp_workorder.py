@@ -31,48 +31,48 @@ class MrpWorkorder(models.Model):
             workcenter_code = workorder.workcenter_id.code
             if workcenter_code == 'OCT':
                 default_fields = [
-                    ('entrada_rollo_lote', 'char'),
-                    ('entrada_rollo_proveedor', 'char'),
-                    ('entrada_rollo_peso', 'char'),
-                    ('entrada_rollo_gramaje', 'char'),
-                    ('entrada_rollo_medidas', 'char'),
-                    ('salida_num_corridas', 'char'),
-                    ('salida_tipo_hexagono', 'char'),
-                    ('operador', 'char'),
+                    ('Lote de Entrada del Rollo', 'char'),
+                    ('Proveedor del Rollo', 'char'),
+                    ('Peso del Rollo', 'char'),
+                    ('Gramaje del Rollo', 'char'),
+                    ('Medidas del Rollo', 'char'),
+                    ('Número de Corridas', 'char'),
+                    ('Tipo de Hexágono de Salida', 'char'),
+                    ('Operador', 'char'),
                 ]
             elif workcenter_code == 'COR':
                 default_fields = [
-                    ('entrada_lote_bloque', 'char'),
-                    ('salida_num_cortes', 'char'),
-                    ('operador', 'char'),
+                    ('Lote del Bloque de Entrada', 'char'),
+                    ('Número de Cortes de Salida', 'char'),
+                    ('Operador', 'char'),
                 ]
             elif workcenter_code == 'PEG':
                 default_fields = [
-                    ('salida_num_reticulas', 'char'),
-                    ('salida_lote_tarima', 'char'),
+                    ('Número de Retículas de Salida', 'char'),
+                    ('Lote de Tarima de Salida', 'char'),
                 ]
             elif workcenter_code == 'LAM':
                 default_fields = [
-                    ('entrada_reticula_lote', 'char'),
-                    ('entrada_rollo_superior_lote', 'char'),
-                    ('entrada_rollo_inferior_lote', 'char'),
-                    ('salida_metros_lineales', 'char'),
-                    ('salida_especificacion', 'char'),
-                    ('cliente', 'char'),
-                    ('codigo_producto', 'char'),
-                    ('merma_generada', 'char'),
-                    ('kg_pegamento_utilizado', 'char'),
-                    ('operador', 'char'),
+                    ('Lote de Retícula de Entrada', 'char'),
+                    ('Lote de Rollo Superior de Entrada', 'char'),
+                    ('Lote de Rollo Inferior de Entrada', 'char'),
+                    ('Metros Lineales de Salida', 'char'),
+                    ('Especificación de Salida', 'char'),
+                    ('Cliente', 'char'),
+                    ('Código del Producto', 'char'),
+                    ('Merma Generada', 'char'),
+                    ('Kg de Pegamento Utilizado', 'char'),
+                    ('Operador', 'char'),
                 ]
             elif workcenter_code == 'REM':
                 default_fields = [
-                    ('entrada_tablero_lote', 'char'),
-                    ('salida_num_tarimas', 'char'),
-                    ('salida_especificacion', 'char'),
-                    ('cliente', 'char'),
-                    ('codigo_producto', 'char'),
-                    ('merma_generada', 'char'),
-                    ('operador', 'char'),
+                    ('Lote de Tablero de Entrada', 'char'),
+                    ('Número de Tarimas de Salida', 'char'),
+                    ('Especificación de Salida', 'char'),
+                    ('Cliente', 'char'),
+                    ('Código del Producto', 'char'),
+                    ('Merma Generada', 'char'),
+                    ('Operador', 'char'),
                 ]
             else:
                 default_fields = []
@@ -104,7 +104,7 @@ class PanelhexWorkorderData(models.Model):
     @api.depends('name')
     def _compute_field_description(self):
         for record in self:
-            record.field_description = record.name.replace('_', ' ').title() if record.name else ''
+            record.field_description = record.name if record.name else ''
 
     def get_value(self):
         self.ensure_one()
@@ -143,6 +143,5 @@ class PanelhexWorkorderData(models.Model):
 
     @api.constrains('field_type', 'value')
     def _check_value_consistency(self):
-        for record in self:
-            # Dado que todos los campos son 'char', no es necesario validar otros tipos
-            pass
+        # Dado que todos los campos son 'char', no es necesario validar otros tipos
+        pass
