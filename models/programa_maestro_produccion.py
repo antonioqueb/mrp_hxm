@@ -152,6 +152,8 @@ class ProgramaMaestroProduccionMensual(models.Model):
     incoming_qty = fields.Float(string='Cantidad entrante', compute='_compute_monthly_data', store=True)
     outgoing_qty = fields.Float(string='Cantidad saliente', compute='_compute_monthly_data', store=True)
     virtual_available = fields.Float(string='Inventario pronosticado', compute='_compute_monthly_data', store=True)
+    safety_stock = fields.Float(string='Stock de Seguridad', related='plan_id.safety_stock', store=True, readonly=False)
+
 
     @api.depends('plan_id', 'date', 'product_id')
     def _compute_monthly_data(self):

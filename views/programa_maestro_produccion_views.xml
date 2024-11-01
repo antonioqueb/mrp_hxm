@@ -60,6 +60,7 @@
                                     <tree editable="bottom">
                                         <field name="date"/>
                                         <field name="demand_forecast"/>
+                                        <field name="safety_stock"/> <!-- Asegúrate de que este campo existe en el modelo -->
                                         <field name="suggested_replenishment"/>
                                         <field name="forecasted_stock"/>
                                         <field name="qty_available"/>
@@ -80,7 +81,7 @@
                                         </group>
                                         <group>
                                             <field name="demand_forecast"/>
-                                            <field name="safety_stock" readonly="1" invisible="1"/>
+                                            <field name="safety_stock"/>
                                             <field name="suggested_replenishment"/>
                                             <field name="forecasted_stock"/>
                                         </group>
