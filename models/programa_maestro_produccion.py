@@ -29,7 +29,7 @@ class ProgramaMaestroProduccion(models.Model):
     forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_forecasted_stock', store=True)
     monthly_data = fields.One2many('panelhex.programa.maestro.produccion.mensual', 'plan_id', string='Datos Mensuales')
     notas = fields.Text(string='Notas')
-    qty_available = fields.Float(string='Stock a Mano', compute='_compute_stock_fields', store=True)  # Aquí se agrega el campo
+    qty_available = fields.Float(string='Stock a Mano', compute='_compute_stock_fields') 
     
 
     # Función para calcular el stock a mano
