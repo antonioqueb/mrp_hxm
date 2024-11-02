@@ -225,7 +225,12 @@ class ProgramaMaestroProduccionMensual(models.Model):
             # Obtener el stock disponible y la cantidad reservada
             product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
             stock_actual = product.qty_available
-            reserved_qty = product.reserved_availability
+
+            # Calcular la cantidad reservada desde stock.quant
+            reserved_qty = sum(self.env['stock.quant'].search([
+                ('product_id', '=', record.product_id.id),
+                ('location_id.usage', '=', 'internal')
+            ]).mapped('reserved_quantity'))
 
             # Calcular el stock neto después de la cantidad reservada y la demanda pronosticada
             net_stock = stock_actual - reserved_qty - record.demand_forecast
