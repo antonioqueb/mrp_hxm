@@ -200,11 +200,8 @@ class ProgramaMaestroProduccionMensual(models.Model):
 
             net_stock = previous_stock - record.demand_forecast
 
-            # Ajuste en la lógica del reabastecimiento para evitar sobreproducción
-            if net_stock < record.safety_stock:
-                reabastecimiento_para_seguridad = record.safety_stock - net_stock
-            else:
-                reabastecimiento_para_seguridad = 0
+            # Ajuste en la lógica del reabastecimiento
+            reabastecimiento_para_seguridad = max(0, record.safety_stock - max(0, net_stock))
 
             # Corrección: sugerir solo lo necesario para la demanda y para mantener el stock de seguridad
             record.suggested_replenishment = record.demand_forecast + reabastecimiento_para_seguridad
