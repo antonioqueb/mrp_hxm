@@ -109,7 +109,7 @@
             </field>
         </record>
 
-        <!-- Kanban View with Improved Display -->
+        <!-- Kanban View with Improved Display    -->
         <record id="view_programa_maestro_produccion_kanban" model="ir.ui.view">
             <field name="name">panelhex.programa.maestro.produccion.kanban</field>
             <field name="model">panelhex.programa.maestro.produccion</field>
