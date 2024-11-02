@@ -36,10 +36,6 @@ class ProgramaMaestroProduccion(models.Model):
     coverage_days = fields.Float(string='Días de Cobertura', compute='_compute_coverage_days')
     demand_stock_difference = fields.Float(string='Demanda Pronosticada - Stock Previsto', compute='_compute_demand_stock_difference')
 
-    # Función de ayuda para calcular meses
-    def _calculate_total_months(self, start_date, end_date):
-        return (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month) + 1
-
     @api.depends('demand_forecast', 'forecasted_stock')
     def _compute_demand_stock_difference(self):
         for record in self:
@@ -48,18 +44,28 @@ class ProgramaMaestroProduccion(models.Model):
     @api.depends('qty_available', 'daily_average_consumption')
     def _compute_coverage_days(self):
         for record in self:
-            record.coverage_days = record.qty_available / record.daily_average_consumption if record.daily_average_consumption > 0 else 0.0
+            if record.daily_average_consumption > 0:
+                record.coverage_days = record.qty_available / record.daily_average_consumption
+            else:
+                record.coverage_days = 0.0
 
     @api.depends('demand_forecast', 'fecha_inicio', 'fecha_fin')
     def _compute_daily_average_consumption(self):
         for record in self:
-            total_days = (record.fecha_fin - record.fecha_inicio).days + 1 if record.fecha_inicio and record.fecha_fin else 0
-            record.daily_average_consumption = record.demand_forecast / total_days if total_days > 0 else 0.0
+            if record.fecha_inicio and record.fecha_fin:
+                total_days = (record.fecha_fin - record.fecha_inicio).days + 1
+                record.daily_average_consumption = record.demand_forecast / total_days if total_days > 0 else 0.0
+            else:
+                record.daily_average_consumption = 0.0
 
     @api.depends('product_id')
     def _compute_stock_fields(self):
         for record in self:
-            record.qty_available = record.product_id.with_context(company_id=self.env.company.id, location_id=False).qty_available if record.product_id else 0.0
+            if record.product_id:
+                product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
+                record.qty_available = product.qty_available
+            else:
+                record.qty_available = 0.0
 
     @api.depends('monthly_data.demand_forecast')
     def _compute_demand_forecast(self):
@@ -82,15 +88,24 @@ class ProgramaMaestroProduccion(models.Model):
             if record.fecha_inicio and record.fecha_fin and record.fecha_inicio > record.fecha_fin:
                 raise ValidationError("La fecha de inicio no puede ser posterior a la fecha de fin.")
 
-    # Métodos de acción y lógica adicional
+    # Métodos de acción
     def action_confirmar(self):
-        self._set_estado('borrador', 'confirmado')
+        for record in self:
+            if record.estado != 'borrador':
+                raise UserError("Solo se pueden confirmar programas en estado borrador.")
+            record.write({'estado': 'confirmado'})
 
     def action_iniciar(self):
-        self._set_estado('planificado', 'en_proceso')
+        for record in self:
+            if record.estado != 'planificado':
+                raise UserError("Solo se pueden iniciar programas en estado planificado.")
+            record.write({'estado': 'en_proceso'})
 
     def action_terminar(self):
-        self._set_estado('en_proceso', 'terminado')
+        for record in self:
+            if record.estado != 'en_proceso':
+                raise UserError("Solo se pueden terminar programas en proceso.")
+            record.write({'estado': 'terminado'})
 
     def action_cancelar(self):
         for record in self:
@@ -99,14 +114,10 @@ class ProgramaMaestroProduccion(models.Model):
             record.write({'estado': 'cancelado'})
 
     def action_borrador(self):
-        self._set_estado('cancelado', 'borrador')
-
-    # Método de ayuda para cambiar el estado
-    def _set_estado(self, estado_actual, nuevo_estado):
         for record in self:
-            if record.estado != estado_actual:
-                raise UserError(f"Solo se pueden modificar programas en estado {estado_actual}.")
-            record.write({'estado': nuevo_estado})
+            if record.estado != 'cancelado':
+                raise UserError("Solo se pueden volver a borrador los programas cancelados.")
+            record.write({'estado': 'borrador'})
 
     @api.model
     def create(self, vals):
@@ -158,3 +169,90 @@ class ProgramaMaestroProduccion(models.Model):
                     })
 
         self.write({'estado': 'planificado'})
+
+class ProgramaMaestroProduccionMensual(models.Model):
+    _name = 'panelhex.programa.maestro.produccion.mensual'
+    _description = 'Datos Mensuales del Programa Maestro de Producción'
+    _order = 'date'
+
+    # Campo Many2one correctamente definido
+    plan_id = fields.Many2one(
+        'panelhex.programa.maestro.produccion',
+        string='Programa Maestro',
+        required=True,
+        ondelete='cascade'
+    )
+    date = fields.Date(string='Mes', required=True)
+    product_id = fields.Many2one('product.product', string='Producto', required=True)
+    safety_stock = fields.Float(string='Stock de Seguridad', related='plan_id.safety_stock', readonly=False)
+    demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_monthly_data')
+    suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_monthly_data')
+    forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_monthly_data')
+    qty_available = fields.Float(string='Cantidad a mano', compute='_compute_monthly_data')
+    incoming_qty = fields.Float(string='Cantidad entrante', compute='_compute_monthly_data')
+    outgoing_qty = fields.Float(string='Cantidad saliente', compute='_compute_monthly_data')
+    virtual_available = fields.Float(string='Inventario pronosticado', compute='_compute_monthly_data')
+
+    @api.depends('plan_id.fecha_inicio', 'plan_id.fecha_fin', 'date', 'product_id', 'plan_id.safety_stock')
+    def _compute_monthly_data(self):
+        records = self.sorted(lambda r: r.date)
+        for idx, record in enumerate(records):
+            if not record.date or not record.product_id or not record.plan_id.fecha_inicio or not record.plan_id.fecha_fin:
+                record.demand_forecast = 0.0
+                record.suggested_replenishment = 0.0
+                record.forecasted_stock = 0.0
+                record.qty_available = 0.0
+                record.incoming_qty = 0.0
+                record.outgoing_qty = 0.0
+                record.virtual_available = 0.0
+                _logger.info(f"Registro {idx}: Datos incompletos, estableciendo todos los valores a 0.0")
+                continue
+
+            start_date = record.plan_id.fecha_inicio
+            end_date = record.plan_id.fecha_fin
+            total_months = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month) + 1
+
+            today = fields.Date.context_today(record)
+            sales_start_date = today - relativedelta(months=total_months)
+            sales_end_date = today
+
+            # Buscar las líneas de pedido de venta con cantidades pendientes de entregar
+            sales = self.env['sale.order.line'].search([
+                ('product_id', '=', record.product_id.id),
+                ('order_id.date_order', '>=', sales_start_date),
+                ('order_id.date_order', '<=', sales_end_date),
+                ('order_id.state', 'in', ['sale', 'done']),
+                ('qty_to_deliver', '>', 0)
+            ])
+
+            total_qty_to_deliver = sum(sales.mapped('qty_to_deliver'))
+            record.demand_forecast = total_qty_to_deliver / total_months if total_months else 0.0
+
+            _logger.info(f"Registro {idx}: Total qty_to_deliver: {total_qty_to_deliver}, Meses: {total_months}, Demanda Pronosticada: {record.demand_forecast}")
+
+            # Obtener el stock disponible en el almacén principal
+            product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
+            stock_actual = product.qty_available
+
+            # Calcular el stock neto después de la demanda pronosticada
+            net_stock = stock_actual - record.demand_forecast
+
+            # Calcular el reabastecimiento necesario para cumplir con el stock de seguridad
+            reabastecimiento_para_seguridad = max(0, record.safety_stock - net_stock)
+
+            # Reabastecimiento sugerido es la demanda pronosticada más lo necesario para llegar al stock de seguridad
+            record.suggested_replenishment = max(0, record.demand_forecast + reabastecimiento_para_seguridad - stock_actual)
+
+            # Actualizar campos relacionados con el stock
+            record.forecasted_stock = net_stock + record.suggested_replenishment
+            record.qty_available = record.forecasted_stock
+            record.incoming_qty = record.suggested_replenishment
+            record.outgoing_qty = record.demand_forecast
+            record.virtual_available = record.forecasted_stock
+
+            _logger.info(f"Registro {idx}: Fecha: {record.date}")
+            _logger.info(f"Registro {idx}: Stock Actual: {stock_actual}")
+            _logger.info(f"Registro {idx}: Stock Neto: {net_stock}")
+            _logger.info(f"Registro {idx}: Reabastecimiento para Seguridad: {reabastecimiento_para_seguridad}")
+            _logger.info(f"Registro {idx}: Reabastecimiento Sugerido: {record.suggested_replenishment}")
+            _logger.info(f"Registro {idx}: Stock Previsto: {record.forecasted_stock}")
