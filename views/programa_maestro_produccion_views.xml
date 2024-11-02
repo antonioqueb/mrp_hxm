@@ -16,6 +16,7 @@
                     <field name="demand_forecast"/>
                     <field name="suggested_replenishment"/>
                     <field name="forecasted_stock"/>
+                    <field name="qty_available"/>
                 </tree>
             </field>
         </record>
@@ -69,7 +70,7 @@
                                         <field name="safety_stock"/>
                                         <field name="suggested_replenishment"/>
                                         <field name="forecasted_stock"/>
-                                        <field name="qty_available"/>
+                                        <field name="qty_available"/> 
                                         <field name="incoming_qty"/>
                                         <field name="outgoing_qty"/>
                                         <field name="virtual_available"/>
@@ -122,6 +123,7 @@
                     <field name="demand_forecast"/>
                     <field name="suggested_replenishment"/>
                     <field name="forecasted_stock"/>
+                    <field name="qty_available"/> 
                     <templates>
                         <t t-name="kanban-box">
                             <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)} oe_kanban_global_click">
@@ -154,6 +156,10 @@
                                         <span class="oe_kanban_status me-1">
                                             <field name="estado"/>
                                         </span>
+                                         <div class="o_indicator">
+                                                <i class="fa fa-archive me-1"></i>
+                                                <span>Stock a Mano: <field name="qty_available"/></span>
+                                            </div>
                                     </div>
                                 </div>
                             </div>

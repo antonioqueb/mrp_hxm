@@ -30,6 +30,16 @@ class ProgramaMaestroProduccion(models.Model):
     monthly_data = fields.One2many('panelhex.programa.maestro.produccion.mensual', 'plan_id', string='Datos Mensuales')
     notas = fields.Text(string='Notas')
 
+    # Función para calcular el stock a mano
+    @api.depends('product_id')
+    def _compute_stock_fields(self):
+        for record in self:
+            if record.product_id:
+                product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
+                record.qty_available = product.qty_available
+            else:
+                record.qty_available = 0.0
+
     @api.depends('monthly_data.demand_forecast')
     def _compute_demand_forecast(self):
         for record in self:
