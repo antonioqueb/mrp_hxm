@@ -211,6 +211,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
             sales_start_date = today - relativedelta(months=total_months)
             sales_end_date = today
 
+            # Obtener las ventas históricas
             sales = self.env['sale.order.line'].search([
                 ('product_id', '=', record.product_id.id),
                 ('order_id.date_order', '>=', sales_start_date),
@@ -221,15 +222,16 @@ class ProgramaMaestroProduccionMensual(models.Model):
             record.demand_forecast = total_sales / total_months if total_months else 0.0
             _logger.info(f"Registro {idx}: Total ventas: {total_sales}, Meses: {total_months}, Demanda Pronosticada: {record.demand_forecast}")
 
-            # Obtener el stock disponible en el almacén principal
+            # Obtener el stock disponible y la cantidad reservada
             product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
             stock_actual = product.qty_available
+            reserved_qty = product.reserved_availability
 
-            # Calcular el stock neto después de la demanda pronosticada
-            net_stock = stock_actual - record.demand_forecast
+            # Calcular el stock neto después de la cantidad reservada y la demanda pronosticada
+            net_stock = stock_actual - reserved_qty - record.demand_forecast
 
             # Calcular el reabastecimiento necesario para cumplir con el stock de seguridad
-            reabastecimiento_para_seguridad = max(0, record.safety_stock - net_stock)
+            reabastecimiento_para_seguridad = max(0, record.plan_id.safety_stock - net_stock)
 
             # Reabastecimiento sugerido es la demanda pronosticada más lo necesario para llegar al stock de seguridad
             record.suggested_replenishment = max(0, record.demand_forecast + reabastecimiento_para_seguridad - stock_actual)
@@ -238,11 +240,12 @@ class ProgramaMaestroProduccionMensual(models.Model):
             record.forecasted_stock = net_stock + record.suggested_replenishment
             record.qty_available = record.forecasted_stock
             record.incoming_qty = record.suggested_replenishment
-            record.outgoing_qty = record.demand_forecast
+            record.outgoing_qty = reserved_qty  # Usar la cantidad reservada como salida
             record.virtual_available = record.forecasted_stock
 
             _logger.info(f"Registro {idx}: Fecha: {record.date}")
             _logger.info(f"Registro {idx}: Stock Actual: {stock_actual}")
+            _logger.info(f"Registro {idx}: Cantidad Reservada: {reserved_qty}")
             _logger.info(f"Registro {idx}: Stock Neto: {net_stock}")
             _logger.info(f"Registro {idx}: Reabastecimiento para Seguridad: {reabastecimiento_para_seguridad}")
             _logger.info(f"Registro {idx}: Reabastecimiento Sugerido: {record.suggested_replenishment}")
