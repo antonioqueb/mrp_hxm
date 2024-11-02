@@ -2,7 +2,7 @@ from odoo import models, fields, api
 from odoo.exceptions import ValidationError, UserError
 from dateutil.relativedelta import relativedelta
 import logging
-# ...
+
 _logger = logging.getLogger(__name__)
 
 class ProgramaMaestroProduccion(models.Model):
@@ -30,10 +30,10 @@ class ProgramaMaestroProduccion(models.Model):
     forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_forecasted_stock')
     monthly_data = fields.One2many('panelhex.programa.maestro.produccion.mensual', 'plan_id', string='Datos Mensuales')
     notas = fields.Text(string='Notas')
-    qty_available = fields.Float(string='Stock a Mano', compute='_compute_stock_fields') 
+    qty_available = fields.Float(string='Stock a Mano', compute='_compute_stock_fields')
     daily_average_consumption = fields.Float(string='Consumo Promedio Diario', compute='_compute_daily_average_consumption')
     coverage_days = fields.Float(string='Días de Cobertura', compute='_compute_coverage_days')
-    demand_stock_difference = fields.Float(string='Diferencia Demanda-Stock', compute='_compute_demand_stock_difference')
+    demand_stock_difference = fields.Float(string='Demanda Pronosticada - Stock Previsto', compute='_compute_demand_stock_difference')
 
     @api.depends('demand_forecast', 'forecasted_stock')
     def _compute_demand_stock_difference(self):
@@ -60,7 +60,6 @@ class ProgramaMaestroProduccion(models.Model):
             else:
                 record.daily_average_consumption = 0.0
 
-    # Función para calcular el stock a mano
     @api.depends('product_id')
     def _compute_stock_fields(self):
         for record in self:
@@ -180,16 +179,16 @@ class ProgramaMaestroProduccionMensual(models.Model):
     plan_id = fields.Many2one('panelhex.programa.maestro.produccion', string='Programa Maestro', required=True, ondelete='cascade')
     date = fields.Date(string='Mes', required=True)
     product_id = fields.Many2one('product.product', string='Producto', required=True)
-    safety_stock = fields.Float(string='Stock de Seguridad', related='plan_id.safety_stock', store=True, readonly=False)
-    demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_monthly_data', store=True)
-    suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_monthly_data', store=True)
-    forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_monthly_data', store=True)
-    qty_available = fields.Float(string='Cantidad a mano', compute='_compute_monthly_data', store=True)
-    incoming_qty = fields.Float(string='Cantidad entrante', compute='_compute_monthly_data', store=True)
-    outgoing_qty = fields.Float(string='Cantidad saliente', compute='_compute_monthly_data', store=True)
-    virtual_available = fields.Float(string='Inventario pronosticado', compute='_compute_monthly_data', store=True)
+    safety_stock = fields.Float(string='Stock de Seguridad', related='plan_id.safety_stock', readonly=False)
+    demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_monthly_data')
+    suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_monthly_data')
+    forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_monthly_data')
+    qty_available = fields.Float(string='Cantidad a mano', compute='_compute_monthly_data')
+    incoming_qty = fields.Float(string='Cantidad entrante', compute='_compute_monthly_data')
+    outgoing_qty = fields.Float(string='Cantidad saliente', compute='_compute_monthly_data')
+    virtual_available = fields.Float(string='Inventario pronosticado', compute='_compute_monthly_data')
 
-    @api.depends('plan_id.fecha_inicio', 'plan_id.fecha_fin', 'date', 'product_id')
+    @api.depends('plan_id.fecha_inicio', 'plan_id.fecha_fin', 'date', 'product_id', 'plan_id.safety_stock')
     def _compute_monthly_data(self):
         records = self.sorted(lambda r: r.date)
         for idx, record in enumerate(records):
@@ -219,21 +218,23 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 ('order_id.state', 'in', ['sale', 'done'])
             ])
             total_sales = sum(sales.mapped('product_uom_qty'))
-            record.demand_forecast = total_sales / total_months if total_sales else 0.0
+            record.demand_forecast = total_sales / total_months if total_months else 0.0
             _logger.info(f"Registro {idx}: Total ventas: {total_sales}, Meses: {total_months}, Demanda Pronosticada: {record.demand_forecast}")
 
+            # Obtener el stock disponible en el almacén principal
             product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
-            stock_actual = product.qty_available  # Cantidad actual en inventario
-            previous_stock = stock_actual
+            stock_actual = product.qty_available
 
-            net_stock = previous_stock - record.demand_forecast
+            # Calcular el stock neto después de la demanda pronosticada
+            net_stock = stock_actual - record.demand_forecast
 
-            # Ajuste en la lógica del reabastecimiento
-            reabastecimiento_para_seguridad = max(0, record.safety_stock - max(0, net_stock))
+            # Calcular el reabastecimiento necesario para cumplir con el stock de seguridad
+            reabastecimiento_para_seguridad = max(0, record.safety_stock - net_stock)
 
-            # Corrección: sugerir solo lo necesario para la demanda y para mantener el stock de seguridad
+            # Reabastecimiento sugerido es la demanda pronosticada más lo necesario para llegar al stock de seguridad
             record.suggested_replenishment = max(0, record.demand_forecast + reabastecimiento_para_seguridad - stock_actual)
 
+            # Actualizar campos relacionados con el stock
             record.forecasted_stock = net_stock + record.suggested_replenishment
             record.qty_available = record.forecasted_stock
             record.incoming_qty = record.suggested_replenishment
