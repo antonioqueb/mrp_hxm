@@ -11,7 +11,6 @@ class ProgramaMaestroProduccion(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'fecha_inicio desc'
 
-    # Campos del modelo
     name = fields.Char(string='Nombre', required=True, copy=False, tracking=True)
     product_id = fields.Many2one('product.product', string='Producto', required=True, tracking=True)
     fecha_inicio = fields.Date(string='Fecha de Inicio', required=True, tracking=True)
@@ -54,7 +53,10 @@ class ProgramaMaestroProduccion(models.Model):
         for record in self:
             if record.fecha_inicio and record.fecha_fin:
                 total_days = (record.fecha_fin - record.fecha_inicio).days + 1
-                record.daily_average_consumption = record.demand_forecast / total_days if total_days > 0 else 0.0
+                if total_days > 0:
+                    record.daily_average_consumption = record.demand_forecast / total_days
+                else:
+                    record.daily_average_consumption = 0.0
             else:
                 record.daily_average_consumption = 0.0
 
@@ -88,7 +90,6 @@ class ProgramaMaestroProduccion(models.Model):
             if record.fecha_inicio and record.fecha_fin and record.fecha_inicio > record.fecha_fin:
                 raise ValidationError("La fecha de inicio no puede ser posterior a la fecha de fin.")
 
-    # Métodos de acción
     def action_confirmar(self):
         for record in self:
             if record.estado != 'borrador':
@@ -121,12 +122,12 @@ class ProgramaMaestroProduccion(models.Model):
 
     @api.model
     def create(self, vals):
-        programa = super().create(vals)
+        programa = super(ProgramaMaestroProduccion, self).create(vals)
         programa._create_monthly_data()
         return programa
 
     def write(self, vals):
-        res = super().write(vals)
+        res = super(ProgramaMaestroProduccion, self).write(vals)
         if any(key in vals for key in ['fecha_inicio', 'fecha_fin', 'product_id', 'safety_stock']):
             self._create_monthly_data()
         return res
@@ -175,13 +176,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
     _description = 'Datos Mensuales del Programa Maestro de Producción'
     _order = 'date'
 
-    # Campo Many2one correctamente definido
-    plan_id = fields.Many2one(
-        'panelhex.programa.maestro.produccion',
-        string='Programa Maestro',
-        required=True,
-        ondelete='cascade'
-    )
+    plan_id = fields.Many2one('panelhex.programa.maestro.produccion', string='Programa Maestro', required=True, ondelete='cascade')
     date = fields.Date(string='Mes', required=True)
     product_id = fields.Many2one('product.product', string='Producto', required=True)
     safety_stock = fields.Float(string='Stock de Seguridad', related='plan_id.safety_stock', readonly=False)
@@ -216,19 +211,15 @@ class ProgramaMaestroProduccionMensual(models.Model):
             sales_start_date = today - relativedelta(months=total_months)
             sales_end_date = today
 
-            # Buscar las líneas de pedido de venta con cantidades pendientes de entregar
             sales = self.env['sale.order.line'].search([
                 ('product_id', '=', record.product_id.id),
                 ('order_id.date_order', '>=', sales_start_date),
                 ('order_id.date_order', '<=', sales_end_date),
-                ('order_id.state', 'in', ['sale', 'done']),
-                ('qty_to_deliver', '>', 0)
+                ('order_id.state', 'in', ['sale', 'done'])
             ])
-
-            total_qty_to_deliver = sum(sales.mapped('qty_to_deliver'))
-            record.demand_forecast = total_qty_to_deliver / total_months if total_months else 0.0
-
-            _logger.info(f"Registro {idx}: Total qty_to_deliver: {total_qty_to_deliver}, Meses: {total_months}, Demanda Pronosticada: {record.demand_forecast}")
+            total_sales = sum(sales.mapped('product_uom_qty'))
+            record.demand_forecast = total_sales / total_months if total_months else 0.0
+            _logger.info(f"Registro {idx}: Total ventas: {total_sales}, Meses: {total_months}, Demanda Pronosticada: {record.demand_forecast}")
 
             # Obtener el stock disponible en el almacén principal
             product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
