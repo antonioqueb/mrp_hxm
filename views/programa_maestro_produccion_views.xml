@@ -17,6 +17,8 @@
                     <field name="suggested_replenishment"/>
                     <field name="forecasted_stock"/>
                     <field name="qty_available"/>
+                    <field name="daily_average_consumption"/>
+
                 </tree>
             </field>
         </record>
@@ -59,6 +61,7 @@
                             <field name="demand_forecast"/>
                             <field name="suggested_replenishment"/>
                             <field name="forecasted_stock"/>
+                            <field name="daily_average_consumption" readonly="1"/>  <!-- Campo agregado -->
                             <field name="qty_available" readonly="1"/>  <!-- Agregado aquí -->
                         </group>
                     </group>
