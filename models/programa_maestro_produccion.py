@@ -211,15 +211,19 @@ class ProgramaMaestroProduccionMensual(models.Model):
             sales_start_date = today - relativedelta(months=total_months)
             sales_end_date = today
 
+            # Buscar las líneas de pedido de venta con cantidades pendientes de entregar
             sales = self.env['sale.order.line'].search([
                 ('product_id', '=', record.product_id.id),
                 ('order_id.date_order', '>=', sales_start_date),
                 ('order_id.date_order', '<=', sales_end_date),
-                ('order_id.state', 'in', ['sale', 'done'])
+                ('order_id.state', 'in', ['sale', 'done']),
+                ('qty_to_deliver', '>', 0)
             ])
-            total_sales = sum(sales.mapped('product_uom_qty'))
-            record.demand_forecast = total_sales / total_months if total_months else 0.0
-            _logger.info(f"Registro {idx}: Total ventas: {total_sales}, Meses: {total_months}, Demanda Pronosticada: {record.demand_forecast}")
+
+            total_qty_to_deliver = sum(sales.mapped('qty_to_deliver'))
+            record.demand_forecast = total_qty_to_deliver / total_months if total_months else 0.0
+
+            _logger.info(f"Registro {idx}: Total qty_to_deliver: {total_qty_to_deliver}, Meses: {total_months}, Demanda Pronosticada: {record.demand_forecast}")
 
             # Obtener el stock disponible en el almacén principal
             product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
