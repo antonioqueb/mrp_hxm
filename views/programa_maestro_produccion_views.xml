@@ -13,6 +13,7 @@
                     <field name="fecha_fin"/>
                     <field name="estado"/>
                     <field name="safety_stock"/>
+                    <field name="critical_stock"/>
                     <field name="demand_forecast"/>
                     <field name="suggested_replenishment"/>
                     <field name="forecasted_stock"/>
@@ -56,6 +57,7 @@
                             <field name="fecha_inicio"/>
                             <field name="fecha_fin"/>
                             <field name="safety_stock"/>
+                            <field name="critical_stock"/>
                         </group>
                         <group string="Cálculos">
                             <field name="demand_forecast"/>
@@ -171,6 +173,10 @@
                                                 <i class="fa fa-archive me-1"></i>
                                                 <span>Stock a Mano: <field name="qty_available"/></span>
                                             </div>
+                                            <div class="o_indicator">
+                                            <i class="fa fa-exclamation-circle me-1"></i>  <!-- Icono agregado -->
+                                            <span>Stock Crítico: <field name="critical_stock"/></span>  <!-- Campo agregado -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>

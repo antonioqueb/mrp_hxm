@@ -24,14 +24,15 @@ class ProgramaMaestroProduccion(models.Model):
         ('cancelado', 'Cancelado')
     ], string='Estado', default='borrador', tracking=True)
     safety_stock = fields.Float(string='Stock de Seguridad', tracking=True, default=0.0)
-    demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_demand_forecast', store=True)
-    suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_suggested_replenishment', store=True)
-    forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_forecasted_stock', store=True)
+    demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_demand_forecast')
+    critical_stock = fields.Float(string='Stock Crítico', tracking=True, default=0.0)
+    suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_suggested_replenishment')
+    forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_forecasted_stock')
     monthly_data = fields.One2many('panelhex.programa.maestro.produccion.mensual', 'plan_id', string='Datos Mensuales')
     notas = fields.Text(string='Notas')
     qty_available = fields.Float(string='Stock a Mano', compute='_compute_stock_fields') 
      # Campo computado: Consumo Promedio Diario
-    daily_average_consumption = fields.Float(string='Consumo Promedio Diario', compute='_compute_daily_average_consumption', store=True)
+    daily_average_consumption = fields.Float(string='Consumo Promedio Diario', compute='_compute_daily_average_consumption')
 
     @api.depends('demand_forecast', 'fecha_inicio', 'fecha_fin')
     def _compute_daily_average_consumption(self):
@@ -44,7 +45,7 @@ class ProgramaMaestroProduccion(models.Model):
                     record.daily_average_consumption = 0.0
             else:
                 record.daily_average_consumption = 0.0
-                
+
     # Función para calcular el stock a mano
     @api.depends('product_id')
     def _compute_stock_fields(self):
