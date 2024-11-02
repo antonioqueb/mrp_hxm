@@ -22,92 +22,94 @@
         </record>
 
         <!-- Form View -->
-        <record id="view_programa_maestro_produccion_form" model="ir.ui.view">
-            <field name="name">panelhex.programa.maestro.produccion.form</field>
-            <field name="model">panelhex.programa.maestro.produccion</field>
-            <field name="arch" type="xml">
-                <form>
-                    <header>
-                        <button name="action_confirmar" string="Confirmar" type="object" 
-                                invisible="estado != 'borrador'" class="oe_highlight"/>
-                        <button name="action_generate_production_orders" string="Generar Órdenes de Producción" 
-                                type="object" invisible="estado != 'confirmado'" class="oe_highlight"/>
-                        <button name="action_iniciar" string="Iniciar Producción" type="object" 
-                                invisible="estado != 'planificado'" class="oe_highlight"/>
-                        <button name="action_terminar" string="Terminar" type="object" 
-                                invisible="estado != 'en_proceso'" class="oe_highlight"/>
-                        <button name="action_cancelar" string="Cancelar" type="object" 
-                                invisible="estado not in ('borrador', 'confirmado', 'planificado', 'en_proceso')"/>
-                        <button name="action_borrador" string="Volver a Borrador" type="object" 
-                                invisible="estado != 'cancelado'"/>
-                        <field name="estado" widget="statusbar" options="{'clickable': '1'}"/>
-                    </header>
-                    <sheet>
-                        <div class="oe_title">
-                            <h1>
-                                <field name="name" placeholder="Nombre del Programa"/>
-                            </h1>
-                        </div>
-                        <group>
-                            <group string="Información del Programa">
-                                <field name="product_id"/>
-                                <field name="fecha_inicio"/>
-                                <field name="fecha_fin"/>
-                                <field name="safety_stock"/>
-                            </group>
-                            <group string="Cálculos">
-                                <field name="demand_forecast"/>
-                                <field name="suggested_replenishment"/>
-                                <field name="forecasted_stock"/>
-                            </group>
+       <record id="view_programa_maestro_produccion_form" model="ir.ui.view">
+        <field name="name">panelhex.programa.maestro.produccion.form</field>
+        <field name="model">panelhex.programa.maestro.produccion</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirmar" string="Confirmar" type="object" 
+                            invisible="estado != 'borrador'" class="oe_highlight"/>
+                    <button name="action_generate_production_orders" string="Generar Órdenes de Producción" 
+                            type="object" invisible="estado != 'confirmado'" class="oe_highlight"/>
+                    <button name="action_iniciar" string="Iniciar Producción" type="object" 
+                            invisible="estado != 'planificado'" class="oe_highlight"/>
+                    <button name="action_terminar" string="Terminar" type="object" 
+                            invisible="estado != 'en_proceso'" class="oe_highlight"/>
+                    <button name="action_cancelar" string="Cancelar" type="object" 
+                            invisible="estado not in ('borrador', 'confirmado', 'planificado', 'en_proceso')"/>
+                    <button name="action_borrador" string="Volver a Borrador" type="object" 
+                            invisible="estado != 'cancelado'"/>
+                    <field name="estado" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del Programa"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Información del Programa">
+                            <field name="product_id"/>
+                            <field name="fecha_inicio"/>
+                            <field name="fecha_fin"/>
+                            <field name="safety_stock"/>
                         </group>
-                        <notebook>
-                            <page string="Datos Mensuales">
-                                <field name="monthly_data">
-                                    <tree editable="bottom">
+                        <group string="Cálculos">
+                            <field name="demand_forecast"/>
+                            <field name="suggested_replenishment"/>
+                            <field name="forecasted_stock"/>
+                            <field name="qty_available" readonly="1"/>  <!-- Agregado aquí -->
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Datos Mensuales">
+                            <field name="monthly_data">
+                                <tree editable="bottom">
+                                    <field name="date"/>
+                                    <field name="demand_forecast"/>
+                                    <field name="safety_stock"/>
+                                    <field name="suggested_replenishment"/>
+                                    <field name="forecasted_stock"/>
+                                    <field name="qty_available" readonly="1"/>  <!-- Asegúrate de que sea readonly -->
+                                    <field name="incoming_qty"/>
+                                    <field name="outgoing_qty"/>
+                                    <field name="virtual_available"/>
+                                </tree>
+                                <form string="Datos Mensuales">
+                                    <group>
                                         <field name="date"/>
+                                        <field name="product_id" readonly="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="qty_available" readonly="1"/>  <!-- Campo agregado y readonly -->
+                                        <field name="incoming_qty" readonly="1"/>
+                                        <field name="outgoing_qty" readonly="1"/>
+                                        <field name="virtual_available" readonly="1"/>
+                                    </group>
+                                    <group>
                                         <field name="demand_forecast"/>
                                         <field name="safety_stock"/>
                                         <field name="suggested_replenishment"/>
                                         <field name="forecasted_stock"/>
-                                        <field name="qty_available"/> 
-                                        <field name="incoming_qty"/>
-                                        <field name="outgoing_qty"/>
-                                        <field name="virtual_available"/>
-                                    </tree>
-                                    <form string="Datos Mensuales">
-                                        <group>
-                                            <field name="date"/>
-                                            <field name="product_id" readonly="1"/>
-                                        </group>
-                                        <group>
-                                            <field name="qty_available" readonly="1"/>
-                                            <field name="incoming_qty" readonly="1"/>
-                                            <field name="outgoing_qty" readonly="1"/>
-                                            <field name="virtual_available" readonly="1"/>
-                                        </group>
-                                        <group>
-                                            <field name="demand_forecast"/>
-                                            <field name="safety_stock"/>
-                                            <field name="suggested_replenishment"/>
-                                            <field name="forecasted_stock"/>
-                                        </group>
-                                    </form>
-                                </field>
-                            </page>
-                            <page string="Notas">
-                                <field name="notas"/>
-                            </page>
-                        </notebook>
-                    </sheet>
-                    <div class="oe_chatter">
-                        <field name="message_follower_ids"/>
-                        <field name="activity_ids"/>
-                        <field name="message_ids"/>
-                    </div>
-                </form>
-            </field>
-        </record>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Notas">
+                            <field name="notas"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
 
         <!-- Kanban View with Improved Display    -->
         <record id="view_programa_maestro_produccion_kanban" model="ir.ui.view">
