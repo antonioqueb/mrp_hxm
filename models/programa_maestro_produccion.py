@@ -31,8 +31,16 @@ class ProgramaMaestroProduccion(models.Model):
     monthly_data = fields.One2many('panelhex.programa.maestro.produccion.mensual', 'plan_id', string='Datos Mensuales')
     notas = fields.Text(string='Notas')
     qty_available = fields.Float(string='Stock a Mano', compute='_compute_stock_fields') 
-     # Campo computado: Consumo Promedio Diario
     daily_average_consumption = fields.Float(string='Consumo Promedio Diario', compute='_compute_daily_average_consumption')
+    coverage_days = fields.Float(string='Días de Cobertura', compute='_compute_coverage_days')
+
+    @api.depends('qty_available', 'daily_average_consumption')
+    def _compute_coverage_days(self):
+        for record in self:
+            if record.daily_average_consumption > 0:
+                record.coverage_days = record.qty_available / record.daily_average_consumption
+            else:
+                record.coverage_days = 0.0
 
     @api.depends('demand_forecast', 'fecha_inicio', 'fecha_fin')
     def _compute_daily_average_consumption(self):

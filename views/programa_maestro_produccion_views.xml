@@ -19,6 +19,8 @@
                     <field name="forecasted_stock"/>
                     <field name="qty_available"/>
                     <field name="daily_average_consumption"/>
+                    <field name="coverage_days"/>
+
 
                 </tree>
             </field>
@@ -65,6 +67,7 @@
                             <field name="forecasted_stock"/>
                             <field name="daily_average_consumption" readonly="1"/>  <!-- Campo agregado -->
                             <field name="qty_available" readonly="1"/>  <!-- Agregado aquí -->
+                            <field name="coverage_days" readonly="1"/> 
                         </group>
                     </group>
                     <notebook>
@@ -132,6 +135,7 @@
                     <field name="forecasted_stock"/>
                     <field name="qty_available" />
                     <field name="daily_average_consumption"/>
+                    <field name="coverage_days" readonly="1"/>
  
                     <templates>
                         <t t-name="kanban-box">
@@ -166,9 +170,7 @@
                                         </div>
                                     </div>
                                     <div class="oe_kanban_footer">
-                                        <span class="oe_kanban_status me-1">
-                                            <field name="estado"/>
-                                        </span>
+                                       
                                          <div class="o_indicator">
                                                 <i class="fa fa-archive me-1"></i>
                                                 <span>Stock a Mano: <field name="qty_available"/></span>
@@ -177,6 +179,13 @@
                                             <i class="fa fa-exclamation-circle me-1"></i>  <!-- Icono agregado -->
                                             <span>Stock Crítico: <field name="critical_stock"/></span>  <!-- Campo agregado -->
                                         </div>
+                                         <div class="o_indicator">
+                                            <i class="fa fa-calendar-check-o me-1"></i>  <!-- Nuevo icono agregado -->
+                                            <span>Días de Cobertura: <field name="coverage_days"/></span>  <!-- Campo agregado -->
+                                        </div>
+                                         <span class="oe_kanban_status me-1">
+                                            <field name="estado"/>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
