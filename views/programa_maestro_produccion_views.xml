@@ -124,7 +124,8 @@
                     <field name="forecasted_stock"/>
                     <templates>
                         <t t-name="kanban-box">
-                            <a type="action" t-attf-data-id="kanban_record_id" t-att-record-id="record.id" class="oe_kanban_global_click">
+                            <a type="action" t-attf-data-id="kanban_record_id" t-att-record-id="record.id" class="oe_kanban_global_click"
+                            t-att-data-context="{'default_id': record.id}">
                                 <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)}">
                                     <div class="oe_kanban_details">
                                         <div class="oe_kanban_content">
@@ -161,6 +162,7 @@
                             </a>
                         </t>
                     </templates>
+
 
                 </kanban>
             </field>
