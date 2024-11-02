@@ -128,7 +128,9 @@
                     <field name="demand_forecast"/>
                     <field name="suggested_replenishment"/>
                     <field name="forecasted_stock"/>
-                    <field name="qty_available"/> 
+                    <field name="qty_available" />
+                    <field name="daily_average_consumption"/>
+ 
                     <templates>
                         <t t-name="kanban-box">
                             <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)} oe_kanban_global_click">
@@ -154,6 +156,10 @@
                                             <div class="o_indicator">
                                                 <i class="fa fa-cubes me-1"></i>
                                                 <span>Stock Previsto: <field name="forecasted_stock"/></span>
+                                            </div>
+                                             <div class="o_indicator">
+                                                <i class="fa fa-calculator me-1"></i>  <!-- Nuevo icono agregado -->
+                                                <span>Consumo Diario: <field name="daily_average_consumption"/></span>  
                                             </div>
                                         </div>
                                     </div>
