@@ -124,46 +124,41 @@
                     <field name="forecasted_stock"/>
                     <templates>
                         <t t-name="kanban-box">
-                            <a type="action" t-attf-data-id="kanban_record_id" t-att-record-id="record.id" class="oe_kanban_global_click"
-                            t-att-data-context="{'default_id': record.id}">
-                                <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)}">
-                                    <div class="oe_kanban_details">
-                                        <div class="oe_kanban_content">
-                                            <strong><field name="name"/></strong>
-                                            <div class="oe_kanban_record_title">
-                                                <field name="product_id" widget="badge"/>
-                                            </div>
-                                            <div class="oe_kanban_indicators">
-                                                <div class="o_indicator">
-                                                    <i class="fa fa-calendar me-1"></i>
-                                                    <span><field name="fecha_inicio"/> - <field name="fecha_fin"/></span>
-                                                </div>
-                                                <div class="o_indicator">
-                                                    <i class="fa fa-bar-chart me-1"></i>
-                                                    <span>Demanda: <field name="demand_forecast"/></span>
-                                                </div>
-                                                <div class="o_indicator">
-                                                    <i class="fa fa-refresh me-1"></i>
-                                                    <span>Reabastecimiento: <field name="suggested_replenishment"/></span>
-                                                </div>
-                                                <div class="o_indicator">
-                                                    <i class="fa fa-cubes me-1"></i>
-                                                    <span>Stock Previsto: <field name="forecasted_stock"/></span>
-                                                </div>
-                                            </div>
+                            <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)}">
+                                <div class="oe_kanban_details">
+                                    <div class="oe_kanban_content">
+                                        <strong><field name="name"/></strong>
+                                        <div class="oe_kanban_record_title">
+                                            <field name="product_id" widget="badge"/>
                                         </div>
-                                        <div class="oe_kanban_footer">
-                                            <span class="oe_kanban_status me-1">
-                                                <field name="estado"/>
-                                            </span>
+                                        <div class="oe_kanban_indicators">
+                                            <div class="o_indicator">
+                                                <i class="fa fa-calendar me-1"></i>
+                                                <span><field name="fecha_inicio"/> - <field name="fecha_fin"/></span>
+                                            </div>
+                                            <div class="o_indicator">
+                                                <i class="fa fa-bar-chart me-1"></i>
+                                                <span>Demanda: <field name="demand_forecast"/></span>
+                                            </div>
+                                            <div class="o_indicator">
+                                                <i class="fa fa-refresh me-1"></i>
+                                                <span>Reabastecimiento: <field name="suggested_replenishment"/></span>
+                                            </div>
+                                            <div class="o_indicator">
+                                                <i class="fa fa-cubes me-1"></i>
+                                                <span>Stock Previsto: <field name="forecasted_stock"/></span>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div class="oe_kanban_footer">
+                                        <span class="oe_kanban_status me-1">
+                                            <field name="estado"/>
+                                        </span>
+                                    </div>
                                 </div>
-                            </a>
+                            </div>
                         </t>
                     </templates>
-
-
                 </kanban>
             </field>
         </record>
