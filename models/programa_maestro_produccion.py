@@ -182,21 +182,9 @@ class ProgramaMaestroProduccionMensual(models.Model):
             record.demand_forecast = total_sales / total_months if total_sales else 0.0
             _logger.info(f"Registro {idx}: Total ventas: {total_sales}, Meses: {total_months}, Demanda Pronosticada: {record.demand_forecast}")
 
-            if idx == 0:
-                product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
-                previous_stock = product.virtual_available
-                record.qty_available = product.qty_available
-                record.incoming_qty = product.incoming_qty
-                record.outgoing_qty = product.outgoing_qty
-                record.virtual_available = product.virtual_available
-
-                _logger.info(f"Registro {idx}: Producto: {record.product_id.display_name}")
-                _logger.info(f"Registro {idx}: A la mano (qty_available): {product.qty_available}")
-                _logger.info(f"Registro {idx}: Entrante (incoming_qty): {product.incoming_qty}")
-                _logger.info(f"Registro {idx}: Saliente (outgoing_qty): {product.outgoing_qty}")
-                _logger.info(f"Registro {idx}: Inventario pronosticado (virtual_available): {product.virtual_available}")
-            else:
-                previous_stock = records[idx - 1].forecasted_stock
+            product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
+            stock_actual = product.qty_available  # Cantidad actual en inventario
+            previous_stock = stock_actual
 
             net_stock = previous_stock - record.demand_forecast
 
@@ -204,7 +192,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
             reabastecimiento_para_seguridad = max(0, record.safety_stock - max(0, net_stock))
 
             # Corrección: sugerir solo lo necesario para la demanda y para mantener el stock de seguridad
-            record.suggested_replenishment = record.demand_forecast + reabastecimiento_para_seguridad
+            record.suggested_replenishment = max(0, record.demand_forecast + reabastecimiento_para_seguridad - stock_actual)
 
             record.forecasted_stock = net_stock + record.suggested_replenishment
             record.qty_available = record.forecasted_stock
@@ -213,8 +201,8 @@ class ProgramaMaestroProduccionMensual(models.Model):
             record.virtual_available = record.forecasted_stock
 
             _logger.info(f"Registro {idx}: Fecha: {record.date}")
-            _logger.info(f"Registro {idx}: Stock Previo: {previous_stock}")
-            _logger.info(f"Registro {idx}: Demanda Pronosticada: {record.demand_forecast}")
+            _logger.info(f"Registro {idx}: Stock Actual: {stock_actual}")
             _logger.info(f"Registro {idx}: Stock Neto: {net_stock}")
+            _logger.info(f"Registro {idx}: Reabastecimiento para Seguridad: {reabastecimiento_para_seguridad}")
             _logger.info(f"Registro {idx}: Reabastecimiento Sugerido: {record.suggested_replenishment}")
             _logger.info(f"Registro {idx}: Stock Previsto: {record.forecasted_stock}")
