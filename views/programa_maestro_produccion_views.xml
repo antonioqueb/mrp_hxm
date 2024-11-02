@@ -211,6 +211,7 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">panelhex.programa.maestro.produccion</field>
             <field name="view_mode">tree,kanban,form,graph</field>
+            <field name="context">{}</field>
             <field name="search_view_id" ref="view_programa_maestro_produccion_search"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
@@ -218,6 +219,8 @@
                 </p>
             </field>
         </record>
+
+
 
         <!-- Menu Item -->
         <menuitem id="menu_programa_maestro_produccion"
