@@ -20,6 +20,7 @@
                     <field name="qty_available"/>
                     <field name="daily_average_consumption"/>
                     <field name="coverage_days"/>
+                    <field name="demand_stock_difference"/>  
 
 
                 </tree>
@@ -68,6 +69,7 @@
                             <field name="daily_average_consumption" readonly="1"/>  <!-- Campo agregado -->
                             <field name="qty_available" readonly="1"/>  <!-- Agregado aquí -->
                             <field name="coverage_days" readonly="1"/> 
+                            <field name="demand_stock_difference" readonly="1"/> 
                         </group>
                     </group>
                     <notebook>
@@ -136,6 +138,7 @@
                     <field name="qty_available" />
                     <field name="daily_average_consumption"/>
                     <field name="coverage_days" readonly="1"/>
+                    <field name="demand_stock_difference"/>
  
                     <templates>
                         <t t-name="kanban-box">
@@ -183,6 +186,15 @@
                                             <i class="fa fa-calendar-check-o me-1"></i>  <!-- Nuevo icono agregado -->
                                             <span>Días de Cobertura: <field name="coverage_days"/></span>  <!-- Campo agregado -->
                                         </div>
+                                        <div class="o_indicator">
+                                            <i class="fa fa-balance-scale me-1"></i>  <!-- Nuevo icono agregado -->
+                                            <span>Diferencia: <field name="demand_stock_difference"/></span>  <!-- Campo agregado -->
+                                        </div>
+
+
+
+
+
                                          <span class="oe_kanban_status me-1">
                                             <field name="estado"/>
                                         </span>

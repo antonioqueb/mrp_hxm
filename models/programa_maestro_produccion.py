@@ -33,6 +33,12 @@ class ProgramaMaestroProduccion(models.Model):
     qty_available = fields.Float(string='Stock a Mano', compute='_compute_stock_fields') 
     daily_average_consumption = fields.Float(string='Consumo Promedio Diario', compute='_compute_daily_average_consumption')
     coverage_days = fields.Float(string='Días de Cobertura', compute='_compute_coverage_days')
+    demand_stock_difference = fields.Float(string='Diferencia Demanda-Stock', compute='_compute_demand_stock_difference')
+
+    @api.depends('demand_forecast', 'forecasted_stock')
+    def _compute_demand_stock_difference(self):
+        for record in self:
+            record.demand_stock_difference = record.demand_forecast - record.forecasted_stock
 
     @api.depends('qty_available', 'daily_average_consumption')
     def _compute_coverage_days(self):
