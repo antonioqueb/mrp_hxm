@@ -1,5 +1,5 @@
-<!-- views/panelhex_workcenter_field_config_views.xml -->
 <odoo>
+    <!-- Vista de árbol para la configuración de campos del centro de trabajo -->
     <record id="view_workcenter_field_config_tree" model="ir.ui.view">
         <field name="name">workcenter.field.config.tree</field>
         <field name="model">panelhex.workcenter.field.config</field>
@@ -12,6 +12,7 @@
         </field>
     </record>
 
+    <!-- Vista de formulario para la configuración de campos del centro de trabajo -->
     <record id="view_workcenter_field_config_form" model="ir.ui.view">
         <field name="name">workcenter.field.config.form</field>
         <field name="model">panelhex.workcenter.field.config</field>
@@ -28,12 +29,28 @@
         </field>
     </record>
 
+    <!-- Vista de formulario actualizada para mrp.workcenter -->
+    <record id="view_mrp_workcenter_form" model="ir.ui.view">
+        <field name="name">mrp.workcenter.form</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_workcenter_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group" position="inside">
+                <group string="Empleados Autorizados">
+                    <field name="allowed_employee_ids" widget="many2many_tags"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acción para la configuración de campos -->
     <record id="action_workcenter_field_config" model="ir.actions.act_window">
         <field name="name">Configuración de Campos</field>
         <field name="res_model">panelhex.workcenter.field.config</field>
         <field name="view_mode">tree,form</field>
     </record>
 
+    <!-- Menú para la configuración de campos -->
     <menuitem id="menu_workcenter_field_config" name="Configuración de Campos"
               parent="mrp.menu_mrp_configuration" action="action_workcenter_field_config"/>
 </odoo>

@@ -31,7 +31,7 @@ class MrpWorkorder(models.Model):
             workcenter_code = workorder.workcenter_id.code
             if workcenter_code == 'OCT':
                 default_fields = [
-                      ('Lote de Entrada del Rollo', 'char'),
+                    ('Lote de Entrada del Rollo', 'char'),
                     ('Peso del Rollo', 'char'),
                     ('Gramaje del Rollo', 'char'),
                     ('Medidas del Rollo', 'char'),
@@ -68,6 +68,15 @@ class MrpWorkorder(models.Model):
                     'name': field_name,
                     'field_type': field_type,
                 })
+
+    @api.model
+    def _get_workcenters_for_user(self):
+        user_employee = self.env.user.employee_id
+        if user_employee:
+            return self.env['mrp.workcenter'].search([
+                ('allowed_employee_ids', 'in', [user_employee.id])
+            ])
+        return self.env['mrp.workcenter'].search([])
 
 class PanelhexWorkorderData(models.Model):
     _name = 'panelhex.workorder.data'
