@@ -7,7 +7,7 @@ _logger = logging.getLogger(__name__)
 
 class ProgramaMaestroProduccion(models.Model):
     _name = 'panelhex.programa.maestro.produccion'
-    _description = 'Programa Maestro de Producción'
+    _description = 'Plan Maestro'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'fecha_inicio desc'
 
@@ -173,7 +173,7 @@ class ProgramaMaestroProduccion(models.Model):
 
 class ProgramaMaestroProduccionMensual(models.Model):
     _name = 'panelhex.programa.maestro.produccion.mensual'
-    _description = 'Datos Mensuales del Programa Maestro de Producción'
+    _description = 'Datos Mensuales del Plan Maestro'
     _order = 'date'
 
     plan_id = fields.Many2one('panelhex.programa.maestro.produccion', string='Programa Maestro', required=True, ondelete='cascade')

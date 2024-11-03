@@ -215,7 +215,7 @@
             <field name="name">panelhex.programa.maestro.produccion.graph</field>
             <field name="model">panelhex.programa.maestro.produccion.mensual</field>
             <field name="arch" type="xml">
-                <graph string="Programa Maestro de Producción" type="bar">
+                <graph string="Plan Maestro" type="bar">
                     <field name="date" interval="month"/>
                     <field name="suggested_replenishment" type="measure"/>
                     <field name="demand_forecast" type="measure"/>
@@ -251,7 +251,7 @@
 
         <!-- Action -->
         <record id="action_programa_maestro_produccion" model="ir.actions.act_window">
-            <field name="name">Programa Maestro de Producción</field>
+            <field name="name">Plan Maestro</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">panelhex.programa.maestro.produccion</field>
             <field name="view_mode">tree,kanban,form,graph</field>
@@ -259,7 +259,7 @@
             <field name="search_view_id" ref="view_programa_maestro_produccion_search"/>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
-                    Crea tu primer Programa Maestro de Producción
+                    Crea tu primer Plan Maestro
                 </p>
             </field>
         </record>
@@ -268,7 +268,7 @@
 
         <!-- Menu Item -->
         <menuitem id="menu_programa_maestro_produccion"
-                  name="Programa Maestro de Producción"
+                  name="Plan Maestro"
                   parent="mrp.menu_mrp_root"
                   action="action_programa_maestro_produccion"
                   sequence="20"/>
