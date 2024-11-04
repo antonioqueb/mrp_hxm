@@ -51,6 +51,14 @@ class MrpWorkorder(models.Model):
             _logger.debug(f"workcenter_id: {record.workcenter_id}")
             _logger.debug(f"workcenter_id.code: {workcenter_code}")
 
+            if not record.workcenter_id:
+                _logger.warning(f"El workorder con ID {record.id} no tiene un workcenter_id asignado.")
+                continue
+
+            if not workcenter_code:
+                _logger.warning(f"El workorder con ID {record.id} tiene un workcenter_id sin código.")
+                continue
+
             # Desactivar todos los checks
             record.update({check: False for checks in self.quality_checks.values() for check in checks})
             _logger.debug("Todos los campos de calidad han sido desactivados")
