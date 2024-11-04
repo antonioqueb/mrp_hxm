@@ -81,7 +81,7 @@
         </field>
     </record>
 
-    <!-- Vistas de Datos Hexamex -->
+    <!-- Vistas de Datos Hexamex... -->
     <record id="panelhex_workorder_data_tree_view" model="ir.ui.view">
         <field name="name">panelhex.workorder.data.tree</field>
         <field name="model">panelhex.workorder.data</field>
