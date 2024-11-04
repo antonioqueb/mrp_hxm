@@ -29,10 +29,10 @@ class MrpWorkorder(models.Model):
     check_seguridad_amarre = fields.Boolean(string="Check de seguridad en el amarre de paquetes")
 
     # Método para determinar qué campos se deben mostrar según el workcenter_code
-    @api.depends('workcenter_id.code')
+    @api.depends('workcenter_id', 'workcenter_id.code')
     def _compute_visible_checks(self):
         for record in self:
-            workcenter_code = record.workcenter_id.code
+            workcenter_code = record.workcenter_id.code if record.workcenter_id else None
 
             # Inicializar todos los checks como False
             record.update({
