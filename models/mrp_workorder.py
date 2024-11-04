@@ -1,4 +1,7 @@
 from odoo import models, fields, api
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
@@ -42,12 +45,24 @@ class MrpWorkorder(models.Model):
     def _compute_visible_checks(self):
         for record in self:
             workcenter_code = record.workcenter_id.code if record.workcenter_id else None
+
+            # Log detallado para depurar el problema de visibilidad
+            _logger.debug(f"Procesando MrpWorkorder ID: {record.id}")
+            _logger.debug(f"workcenter_id: {record.workcenter_id}")
+            _logger.debug(f"workcenter_id.code: {workcenter_code}")
+
+            # Desactivar todos los checks
             record.update({check: False for checks in self.quality_checks.values() for check in checks})
+            _logger.debug("Todos los campos de calidad han sido desactivados")
 
             # Activar solo los checks específicos del workcenter actual
             if workcenter_code in self.quality_checks:
+                _logger.debug(f"Activando campos de calidad para workcenter_code: {workcenter_code}")
                 for check in self.quality_checks[workcenter_code]:
                     record[check] = True
+                    _logger.debug(f"Campo activado: {check}")
+            else:
+                _logger.debug(f"No se encontraron campos de calidad para workcenter_code: {workcenter_code}")
 
     visible_checks = fields.Boolean(compute='_compute_visible_checks', store=True)
 
@@ -55,13 +70,13 @@ class MrpWorkorder(models.Model):
     def create(self, vals):
         res = super(MrpWorkorder, self).create(vals)
         if res.workcenter_id:
-            self.create_default_workorder_data(res)
+            res.create_default_workorder_data()
         return res
 
-    def create_default_workorder_data(self, workorder):
+    def create_default_workorder_data(self):
         WorkorderData = self.env['panelhex.workorder.data']
         field_configs = self.env['panelhex.workcenter.field.config'].search([
-            ('workcenter_id', '=', workorder.workcenter_id.id)
+            ('workcenter_id', '=', self.workcenter_id.id)
         ])
 
         default_fields_mapping = {
@@ -102,16 +117,16 @@ class MrpWorkorder(models.Model):
         if field_configs:
             for config in field_configs:
                 WorkorderData.create({
-                    'workorder_id': workorder.id,
+                    'workorder_id': self.id,
                     'name': config.field_name,
                     'field_type': config.field_type,
                 })
         else:
-            workcenter_code = workorder.workcenter_id.code
+            workcenter_code = self.workcenter_id.code
             default_fields = default_fields_mapping.get(workcenter_code, [])
             for field_name, field_type in default_fields:
                 WorkorderData.create({
-                    'workorder_id': workorder.id,
+                    'workorder_id': self.id,
                     'name': field_name,
                     'field_type': field_type,
                 })

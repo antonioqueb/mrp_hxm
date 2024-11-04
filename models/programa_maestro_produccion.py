@@ -1,3 +1,4 @@
+# models/programa_maestro_produccion.py
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError, UserError
 from dateutil.relativedelta import relativedelta
