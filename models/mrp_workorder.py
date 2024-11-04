@@ -1,5 +1,4 @@
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
@@ -28,6 +27,60 @@ class MrpWorkorder(models.Model):
     check_armado_piezas = fields.Boolean(string="Verificar armado de las piezas")
     check_marcado_etiquetado = fields.Boolean(string="Validar marcado y etiquetado")
     check_seguridad_amarre = fields.Boolean(string="Check de seguridad en el amarre de paquetes")
+
+    # Método para determinar qué campos se deben mostrar según el workcenter_code
+    @api.depends('workcenter_id.code')
+    def _compute_visible_checks(self):
+        for record in self:
+            workcenter_code = record.workcenter_id.code
+
+            # Inicializar todos los checks como False
+            record.update({
+                'check_tipo_hexagono': False,
+                'check_gramaje': False,
+                'check_medidas_bloque': False,
+                'check_consistencia_lote': False,
+                'check_precision_cortes': False,
+                'check_numero_cortes': False,
+                'check_alineacion_reticula': False,
+                'check_calidad_pegado': False,
+                'check_resistencia_pegado': False,
+                'check_apariencia_tablero': False,
+                'check_pandeo': False,
+                'check_espesor_medidas': False,
+                'check_cantidad_pegamento': False,
+                'check_acabado_superficial': False,
+                'check_armado_piezas': False,
+                'check_marcado_etiquetado': False,
+                'check_seguridad_amarre': False,
+            })
+
+            # Activar los checks correspondientes al workcenter_code
+            if workcenter_code == 'OCT':
+                record.check_tipo_hexagono = True
+                record.check_gramaje = True
+                record.check_medidas_bloque = True
+                record.check_consistencia_lote = True
+            elif workcenter_code == 'COR':
+                record.check_precision_cortes = True
+                record.check_numero_cortes = True
+            elif workcenter_code == 'PEG':
+                record.check_alineacion_reticula = True
+                record.check_calidad_pegado = True
+                record.check_resistencia_pegado = True
+            elif workcenter_code == 'LAM':
+                record.check_apariencia_tablero = True
+                record.check_pandeo = True
+                record.check_espesor_medidas = True
+                record.check_cantidad_pegamento = True
+            elif workcenter_code == 'REM':
+                record.check_acabado_superficial = True
+                record.check_armado_piezas = True
+                record.check_marcado_etiquetado = True
+                record.check_seguridad_amarre = True
+
+    # Computed field to determine visibility
+    visible_checks = fields.Boolean(compute='_compute_visible_checks', store=True)
 
     @api.model
     def create(self, vals):
