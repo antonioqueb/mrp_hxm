@@ -41,7 +41,7 @@
                 <page string="Calidad">
                     <group>
                         <!-- Sección de Validaciones de Calidad para Octágono -->
-                        <group string="Octágono" invisible="code != 'OCT'">
+                        <group string="Octagono" invisible="code != 'OCT'">
                             <field name="check_tipo_hexagono" widget="boolean_toggle" string="Verificar el tipo de Hexágono"/>
                             <field name="check_gramaje" widget="boolean_toggle" string="Check de gramaje"/>
                             <field name="check_medidas_bloque" widget="boolean_toggle" string="Validar medidas del bloque gigante"/>
