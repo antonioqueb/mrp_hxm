@@ -6,6 +6,9 @@ _logger = logging.getLogger(__name__)
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
+    code = fields.Char(related='workcenter_id.code', string='Código del Centro de Trabajo', store=True)
+
+
     panelhex_data_ids = fields.One2many('panelhex.workorder.data', 'workorder_id', string='Datos Críticos')
 
     # Campos booleanos para las métricas de calidad

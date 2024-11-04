@@ -8,6 +8,7 @@
                 <!-- Pestaña de Información General -->
                 <page string="Información General">
                     <group>
+                        <field name="workcenter_id"/>
                         <field name="code"/>
                     </group>
                 </page>
