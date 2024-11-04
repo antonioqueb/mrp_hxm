@@ -32,7 +32,7 @@
                 <page string="Calidad">
                     <group>
                         <!-- Sección de Validaciones de Calidad para Octágono -->
-                        <group string="Octágono" invisible="workcenter_id.code != 'OCT'">
+                        <group string="Octágono">
                             <field name="check_tipo_hexagono" widget="boolean_toggle" string="Verificar el tipo de Hexágono"/>
                             <field name="check_gramaje" widget="boolean_toggle" string="Check de gramaje"/>
                             <field name="check_medidas_bloque" widget="boolean_toggle" string="Validar medidas del bloque gigante"/>
@@ -40,20 +40,20 @@
                         </group>
 
                         <!-- Sección de Validaciones de Calidad para Corte (Guillotina) -->
-                        <group string="Corte (Guillotina)" invisible="workcenter_id.code != 'COR'">
+                        <group string="Corte (Guillotina)">
                             <field name="check_precision_cortes" widget="boolean_toggle" string="Check de precisión en los cortes"/>
                             <field name="check_numero_cortes" widget="boolean_toggle" string="Validar número de cortes correctos por bloque"/>
                         </group>
 
                         <!-- Sección de Validaciones de Calidad para Pegado -->
-                        <group string="Pegado" invisible="workcenter_id.code != 'PEG'">
+                        <group string="Pegado">
                             <field name="check_alineacion_reticula" widget="boolean_toggle" string="Verificar alineación de la retícula"/>
                             <field name="check_calidad_pegado" widget="boolean_toggle" string="Check de calidad del pegado"/>
                             <field name="check_resistencia_pegado" widget="boolean_toggle" string="Validar resistencia del pegado"/>
                         </group>
 
                         <!-- Sección de Validaciones de Calidad para Laminado -->
-                        <group string="Laminado" invisible="workcenter_id.code != 'LAM'">
+                        <group string="Laminado">
                             <field name="check_apariencia_tablero" widget="boolean_toggle" string="Check de apariencia del tablero laminado"/>
                             <field name="check_pandeo" widget="boolean_toggle" string="Verificar pandeo"/>
                             <field name="check_espesor_medidas" widget="boolean_toggle" string="Validar espesor y medidas"/>
@@ -61,7 +61,7 @@
                         </group>
 
                         <!-- Sección de Validaciones de Calidad para Remanejo -->
-                        <group string="Remanejo" invisible="workcenter_id.code != 'REM'">
+                        <group string="Remanejo">
                             <field name="check_acabado_superficial" widget="boolean_toggle" string="Check de acabado superficial"/>
                             <field name="check_armado_piezas" widget="boolean_toggle" string="Verificar armado de las piezas"/>
                             <field name="check_marcado_etiquetado" widget="boolean_toggle" string="Validar marcado y etiquetado"/>
