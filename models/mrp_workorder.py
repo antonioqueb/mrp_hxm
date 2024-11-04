@@ -4,7 +4,7 @@ from odoo.exceptions import ValidationError
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
-    panelhex_data_ids = fields.One2many('panelhex.workorder.data', 'workorder_id', string='Datos Hexamex')
+    panelhex_data_ids = fields.One2many('panelhex.workorder.data', 'workorder_id', string='Datos Críticos')
 
     @api.model
     def create(self, vals):
@@ -37,27 +37,36 @@ class MrpWorkorder(models.Model):
                     ('Medidas del Rollo', 'char'),
                     ('Número de Corridas', 'char'),
                     ('Tipo de Hexágono de Salida', 'char'),
+                  
                 ]
             elif workcenter_code == 'COR':
                 default_fields = [
-                    ('Número de Cortes de Salida', 'char'),
+                    ('Número de Cortes por turno', 'char'),
+                    ('Número de Cortes de cada bloque', 'char')
                 ]
             elif workcenter_code == 'PEG':
                 default_fields = [
-                    ('Número de Retículas de Salida', 'char'),
+                    ('Retículas pegadas por turno', 'char'),
                 ]
             elif workcenter_code == 'LAM':
                 default_fields = [
                     ('Lote de Retícula de Entrada', 'char'),
                     ('Lote de Rollo Superior de Entrada', 'char'),
                     ('Lote de Rollo Inferior de Entrada', 'char'),
-                    ('Metros Lineales de Salida', 'char'),
-                    ('Especificación de Salida', 'char'),
+                    ('Cantidad de Metros Lineales por turno', 'char'),
+                    ('Especificación del material laminado', 'char'),
+                    ('Código de producto', 'char'),
+                    ('Merma generada', 'char'),
+                    ('Kilogramos de Pegamento utilizado', 'char'),
+
                 ]
             elif workcenter_code == 'REM':
                 default_fields = [
-                    ('Número de Tarimas de Salida', 'char'),
-                    ('Especificación de Salida', 'char')
+                    ('Número de Tarimas de PT por turno', 'char'),
+                    ('Especificación del material laminado', 'char'),
+                    ('Código de producto', 'char'),
+                    ('Número de tarimas producidas de la Orden de producción', 'char'),
+                    ('Merma Generada', 'char')
                 ]
             else:
                 default_fields = []
