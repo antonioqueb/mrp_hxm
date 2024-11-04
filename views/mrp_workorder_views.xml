@@ -5,6 +5,7 @@
         <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
+                <!-- Pestaña de Datos Hexamex -->
                 <page string="Datos Hexamex">
                     <field name="panelhex_data_ids">
                         <tree editable="bottom">
@@ -25,6 +26,48 @@
                             </div>
                         </form>
                     </field>
+                </page>
+
+                <!-- Nueva pestaña de Calidad -->
+                <page string="Calidad">
+                    <group>
+                        <!-- Sección de Validaciones de Calidad para Octágono -->
+                        <group string="Octágono">
+                            <field name="check_tipo_hexagono" widget="boolean_toggle" string="Verificar el tipo de Hexágono"/>
+                            <field name="check_gramaje" widget="boolean_toggle" string="Check de gramaje"/>
+                            <field name="check_medidas_bloque" widget="boolean_toggle" string="Validar medidas del bloque gigante"/>
+                            <field name="check_consistencia_lote" widget="boolean_toggle" string="Check de consistencia del lote"/>
+                        </group>
+
+                        <!-- Sección de Validaciones de Calidad para Corte (Guillotina) -->
+                        <group string="Corte (Guillotina)">
+                            <field name="check_precision_cortes" widget="boolean_toggle" string="Check de precisión en los cortes"/>
+                            <field name="check_numero_cortes" widget="boolean_toggle" string="Validar número de cortes correctos por bloque"/>
+                        </group>
+
+                        <!-- Sección de Validaciones de Calidad para Pegado -->
+                        <group string="Pegado">
+                            <field name="check_alineacion_reticula" widget="boolean_toggle" string="Verificar alineación de la retícula"/>
+                            <field name="check_calidad_pegado" widget="boolean_toggle" string="Check de calidad del pegado"/>
+                            <field name="check_resistencia_pegado" widget="boolean_toggle" string="Validar resistencia del pegado"/>
+                        </group>
+
+                        <!-- Sección de Validaciones de Calidad para Laminado -->
+                        <group string="Laminado">
+                            <field name="check_apariencia_tablero" widget="boolean_toggle" string="Check de apariencia del tablero laminado"/>
+                            <field name="check_pandeo" widget="boolean_toggle" string="Verificar pandeo"/>
+                            <field name="check_espesor_medidas" widget="boolean_toggle" string="Validar espesor y medidas"/>
+                            <field name="check_cantidad_pegamento" widget="boolean_toggle" string="Check de cantidad de pegamento"/>
+                        </group>
+
+                        <!-- Sección de Validaciones de Calidad para Remanejo -->
+                        <group string="Remanejo">
+                            <field name="check_acabado_superficial" widget="boolean_toggle" string="Check de acabado superficial"/>
+                            <field name="check_armado_piezas" widget="boolean_toggle" string="Verificar armado de las piezas"/>
+                            <field name="check_marcado_etiquetado" widget="boolean_toggle" string="Validar marcado y etiquetado"/>
+                            <field name="check_seguridad_amarre" widget="boolean_toggle" string="Check de seguridad en el amarre de paquetes"/>
+                        </group>
+                    </group>
                 </page>
             </xpath>
         </field>

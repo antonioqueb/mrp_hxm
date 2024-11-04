@@ -6,6 +6,29 @@ class MrpWorkorder(models.Model):
 
     panelhex_data_ids = fields.One2many('panelhex.workorder.data', 'workorder_id', string='Datos Críticos')
 
+    # Nuevos campos booleanos para las métricas de calidad
+    check_tipo_hexagono = fields.Boolean(string="Verificar el tipo de Hexágono")
+    check_gramaje = fields.Boolean(string="Check de gramaje")
+    check_medidas_bloque = fields.Boolean(string="Validar medidas del bloque gigante")
+    check_consistencia_lote = fields.Boolean(string="Check de consistencia del lote")
+
+    check_precision_cortes = fields.Boolean(string="Check de precisión en los cortes")
+    check_numero_cortes = fields.Boolean(string="Validar número de cortes correctos por bloque")
+
+    check_alineacion_reticula = fields.Boolean(string="Verificar alineación de la retícula")
+    check_calidad_pegado = fields.Boolean(string="Check de calidad del pegado")
+    check_resistencia_pegado = fields.Boolean(string="Validar resistencia del pegado")
+
+    check_apariencia_tablero = fields.Boolean(string="Check de apariencia del tablero laminado")
+    check_pandeo = fields.Boolean(string="Verificar pandeo")
+    check_espesor_medidas = fields.Boolean(string="Validar espesor y medidas")
+    check_cantidad_pegamento = fields.Boolean(string="Check de cantidad de pegamento")
+
+    check_acabado_superficial = fields.Boolean(string="Check de acabado superficial")
+    check_armado_piezas = fields.Boolean(string="Verificar armado de las piezas")
+    check_marcado_etiquetado = fields.Boolean(string="Validar marcado y etiquetado")
+    check_seguridad_amarre = fields.Boolean(string="Check de seguridad en el amarre de paquetes")
+
     @api.model
     def create(self, vals):
         res = super(MrpWorkorder, self).create(vals)
@@ -37,7 +60,6 @@ class MrpWorkorder(models.Model):
                     ('Medidas del Rollo', 'char'),
                     ('Número de Corridas', 'char'),
                     ('Tipo de Hexágono de Salida', 'char'),
-                  
                 ]
             elif workcenter_code == 'COR':
                 default_fields = [
@@ -58,7 +80,6 @@ class MrpWorkorder(models.Model):
                     ('Código de producto', 'char'),
                     ('Merma generada', 'char'),
                     ('Kilogramos de Pegamento utilizado', 'char'),
-
                 ]
             elif workcenter_code == 'REM':
                 default_fields = [
