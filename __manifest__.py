@@ -7,6 +7,7 @@
         Este módulo extiende la funcionalidad del módulo MRP de Odoo para adaptarse a las necesidades específicas de PanelHex.
     """,
     'author': 'ALPHAQUEB CONSULTING SAS',
+    'license': 'LGPL-3',
     'website': 'https://alphaqueb.com',
     'depends': ['base','mrp','sale',],
     'data': [

@@ -20,108 +20,105 @@
                     <field name="qty_available"/>
                     <field name="daily_average_consumption"/>
                     <field name="coverage_days"/>
-                    <field name="demand_stock_difference"/>  
-
-
+                    <field name="demand_stock_difference"/>
                 </tree>
             </field>
         </record>
 
         <!-- Form View -->
-       <record id="view_programa_maestro_produccion_form" model="ir.ui.view">
-        <field name="name">panelhex.programa.maestro.produccion.form</field>
-        <field name="model">panelhex.programa.maestro.produccion</field>
-        <field name="arch" type="xml">
-            <form>
-                <header>
-                    <button name="action_confirmar" string="Confirmar" type="object" 
-                            invisible="estado != 'borrador'" class="oe_highlight"/>
-                    <button name="action_generate_production_orders" string="Generar Órdenes de Producción" 
-                            type="object" invisible="estado != 'confirmado'" class="oe_highlight"/>
-                    <button name="action_iniciar" string="Iniciar Producción" type="object" 
-                            invisible="estado != 'planificado'" class="oe_highlight"/>
-                    <button name="action_terminar" string="Terminar" type="object" 
-                            invisible="estado != 'en_proceso'" class="oe_highlight"/>
-                    <button name="action_cancelar" string="Cancelar" type="object" 
-                            invisible="estado not in ('borrador', 'confirmado', 'planificado', 'en_proceso')"/>
-                    <button name="action_borrador" string="Volver a Borrador" type="object" 
-                            invisible="estado != 'cancelado'"/>
-                    <field name="estado" widget="statusbar" options="{'clickable': '1'}"/>
-                </header>
-                <sheet>
-                    <div class="oe_title">
-                        <h1>
-                            <field name="name" placeholder="Nombre del Programa"/>
-                        </h1>
-                    </div>
-                    <group>
-                        <group string="Información del Programa">
-                            <field name="product_id"/>
-                            <field name="fecha_inicio"/>
-                            <field name="fecha_fin"/>
-                            <field name="safety_stock"/>
-                            <field name="critical_stock"/>
+        <record id="view_programa_maestro_produccion_form" model="ir.ui.view">
+            <field name="name">panelhex.programa.maestro.produccion.form</field>
+            <field name="model">panelhex.programa.maestro.produccion</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_confirmar" string="Confirmar" type="object"
+                                invisible="estado != 'borrador'" class="oe_highlight"/>
+                        <button name="action_generate_production_orders" string="Generar Órdenes de Producción"
+                                type="object" invisible="estado != 'confirmado'" class="oe_highlight"/>
+                        <button name="action_iniciar" string="Iniciar Producción" type="object"
+                                invisible="estado != 'planificado'" class="oe_highlight"/>
+                        <button name="action_terminar" string="Terminar" type="object"
+                                invisible="estado != 'en_proceso'" class="oe_highlight"/>
+                        <button name="action_cancelar" string="Cancelar" type="object"
+                                invisible="estado not in ('borrador', 'confirmado', 'planificado', 'en_proceso')"/>
+                        <button name="action_borrador" string="Volver a Borrador" type="object"
+                                invisible="estado != 'cancelado'"/>
+                        <field name="estado" widget="statusbar" options="{'clickable': '1'}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Nombre del Programa"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Información del Programa">
+                                <field name="product_id"/>
+                                <field name="fecha_inicio"/>
+                                <field name="fecha_fin"/>
+                                <field name="safety_stock"/>
+                                <field name="critical_stock"/>
+                            </group>
+                            <group string="Cálculos">
+                                <field name="demand_forecast"/>
+                                <field name="suggested_replenishment"/>
+                                <field name="forecasted_stock"/>
+                                <field name="daily_average_consumption" readonly="1"/>
+                                <field name="qty_available" readonly="1"/>
+                                <field name="coverage_days" readonly="1"/>
+                                <field name="demand_stock_difference" readonly="1"/>
+                            </group>
                         </group>
-                        <group string="Cálculos">
-                            <field name="demand_forecast"/>
-                            <field name="suggested_replenishment"/>
-                            <field name="forecasted_stock"/>
-                            <field name="daily_average_consumption" readonly="1"/>  <!-- Campo agregado -->
-                            <field name="qty_available" readonly="1"/>  <!-- Agregado aquí -->
-                            <field name="coverage_days" readonly="1"/> 
-                            <field name="demand_stock_difference" readonly="1"/> 
-                        </group>
-                    </group>
-                    <notebook>
-                        <page string="Datos Mensuales">
-                            <field name="monthly_data">
-                                <tree editable="bottom">
-                                    <field name="date"/>
-                                    <field name="demand_forecast"/>
-                                    <field name="safety_stock"/>
-                                    <field name="suggested_replenishment"/>
-                                    <field name="forecasted_stock"/>
-                                    <field name="qty_available" readonly="1"/>  <!-- Asegúrate de que sea readonly -->
-                                    <field name="incoming_qty"/>
-                                    <field name="outgoing_qty"/>
-                                    <field name="virtual_available"/>
-                                </tree>
-                                <form string="Datos Mensuales">
-                                    <group>
+                        <notebook>
+                            <page string="Datos Mensuales">
+                                <field name="monthly_data">
+                                    <tree editable="bottom">
                                         <field name="date"/>
-                                        <field name="product_id" readonly="1"/>
-                                    </group>
-                                    <group>
-                                        <field name="qty_available" readonly="1"/>  <!-- Campo agregado y readonly -->
-                                        <field name="incoming_qty" readonly="1"/>
-                                        <field name="outgoing_qty" readonly="1"/>
-                                        <field name="virtual_available" readonly="1"/>
-                                    </group>
-                                    <group>
                                         <field name="demand_forecast"/>
                                         <field name="safety_stock"/>
                                         <field name="suggested_replenishment"/>
                                         <field name="forecasted_stock"/>
-                                    </group>
-                                </form>
-                            </field>
-                        </page>
-                        <page string="Notas">
-                            <field name="notas"/>
-                        </page>
-                    </notebook>
-                </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
-            </form>
-        </field>
-    </record>
+                                        <field name="qty_available" readonly="1"/>
+                                        <field name="incoming_qty"/>
+                                        <field name="outgoing_qty"/>
+                                        <field name="virtual_available"/>
+                                    </tree>
+                                    <form string="Datos Mensuales">
+                                        <group>
+                                            <field name="date"/>
+                                            <field name="product_id" readonly="1"/>
+                                        </group>
+                                        <group>
+                                            <field name="qty_available" readonly="1"/>
+                                            <field name="incoming_qty" readonly="1"/>
+                                            <field name="outgoing_qty" readonly="1"/>
+                                            <field name="virtual_available" readonly="1"/>
+                                        </group>
+                                        <group>
+                                            <field name="demand_forecast"/>
+                                            <field name="safety_stock"/>
+                                            <field name="suggested_replenishment"/>
+                                            <field name="forecasted_stock"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Notas">
+                                <field name="notas"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
 
-
-        <!-- Kanban View with Improved Display    -->
+        <!-- Kanban View with Improved Display -->
         <record id="view_programa_maestro_produccion_kanban" model="ir.ui.view">
             <field name="name">panelhex.programa.maestro.produccion.kanban</field>
             <field name="model">panelhex.programa.maestro.produccion</field>
@@ -135,11 +132,11 @@
                     <field name="demand_forecast"/>
                     <field name="suggested_replenishment"/>
                     <field name="forecasted_stock"/>
-                    <field name="qty_available" />
+                    <field name="qty_available"/>
                     <field name="daily_average_consumption"/>
                     <field name="coverage_days" readonly="1"/>
                     <field name="demand_stock_difference"/>
- 
+
                     <templates>
                         <t t-name="kanban-box">
                             <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)} oe_kanban_global_click">
@@ -151,51 +148,45 @@
                                         </div>
                                         <div class="oe_kanban_indicators">
                                             <div class="o_indicator">
-                                                <i class="fa fa-calendar me-1"></i>
+                                                <i class="fa fa-calendar me-1" title="Fechas"></i>
                                                 <span><field name="fecha_inicio"/> - <field name="fecha_fin"/></span>
                                             </div>
                                             <div class="o_indicator">
-                                                <i class="fa fa-bar-chart me-1"></i>
+                                                <i class="fa fa-bar-chart me-1" title="Demanda"></i>
                                                 <span>Demanda: <field name="demand_forecast"/></span>
                                             </div>
                                             <div class="o_indicator">
-                                                <i class="fa fa-refresh me-1"></i>
+                                                <i class="fa fa-refresh me-1" title="Reabastecimiento"></i>
                                                 <span>Reabastecimiento: <field name="suggested_replenishment"/></span>
                                             </div>
                                             <div class="o_indicator">
-                                                <i class="fa fa-cubes me-1"></i>
+                                                <i class="fa fa-cubes me-1" title="Stock Previsto"></i>
                                                 <span>Stock Previsto: <field name="forecasted_stock"/></span>
                                             </div>
-                                             <div class="o_indicator">
-                                                <i class="fa fa-calculator me-1"></i>  <!-- Nuevo icono agregado -->
-                                                <span>Consumo Diario: <field name="daily_average_consumption"/></span>  
+                                            <div class="o_indicator">
+                                                <i class="fa fa-calculator me-1" title="Consumo Diario"></i>
+                                                <span>Consumo Diario: <field name="daily_average_consumption"/></span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="oe_kanban_footer">
-                                       
-                                         <div class="o_indicator">
-                                                <i class="fa fa-archive me-1"></i>
-                                                <span>Stock a Mano: <field name="qty_available"/></span>
-                                            </div>
-                                            <div class="o_indicator">
-                                            <i class="fa fa-exclamation-circle me-1"></i>  <!-- Icono agregado -->
-                                            <span>Stock Crítico: <field name="critical_stock"/></span>  <!-- Campo agregado -->
-                                        </div>
-                                         <div class="o_indicator">
-                                            <i class="fa fa-calendar-check-o me-1"></i>  <!-- Nuevo icono agregado -->
-                                            <span>Días de Cobertura: <field name="coverage_days"/></span>  <!-- Campo agregado -->
+                                        <div class="o_indicator">
+                                            <i class="fa fa-archive me-1" title="Stock a Mano"></i>
+                                            <span>Stock a Mano: <field name="qty_available"/></span>
                                         </div>
                                         <div class="o_indicator">
-                                            <i class="fa fa-balance-scale me-1"></i>  <!-- Nuevo icono agregado -->
-                                            <span>Diferencia: <field name="demand_stock_difference"/></span>  <!-- Campo agregado -->
+                                            <i class="fa fa-exclamation-circle me-1" title="Stock Crítico"></i>
+                                            <span>Stock Crítico: <field name="critical_stock"/></span>
                                         </div>
-
-
-
-
-
-                                         <span class="oe_kanban_status me-1">
+                                        <div class="o_indicator">
+                                            <i class="fa fa-calendar-check-o me-1" title="Días de Cobertura"></i>
+                                            <span>Días de Cobertura: <field name="coverage_days"/></span>
+                                        </div>
+                                        <div class="o_indicator">
+                                            <i class="fa fa-balance-scale me-1" title="Diferencia"></i>
+                                            <span>Diferencia: <field name="demand_stock_difference"/></span>
+                                        </div>
+                                        <span class="oe_kanban_status me-1">
                                             <field name="estado"/>
                                         </span>
                                     </div>
@@ -203,12 +194,9 @@
                             </div>
                         </t>
                     </templates>
-
                 </kanban>
             </field>
         </record>
-
-
 
         <!-- Graph View -->
         <record id="view_programa_maestro_produccion_graph" model="ir.ui.view">
@@ -263,8 +251,6 @@
                 </p>
             </field>
         </record>
-
-
 
         <!-- Menu Item -->
         <menuitem id="menu_programa_maestro_produccion"
