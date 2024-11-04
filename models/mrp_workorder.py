@@ -5,7 +5,7 @@ class MrpWorkorder(models.Model):
 
     panelhex_data_ids = fields.One2many('panelhex.workorder.data', 'workorder_id', string='Datos Críticos')
 
-    # Nuevos campos booleanos para las métricas de calidad
+    # Campos booleanos para las métricas de calidad
     check_tipo_hexagono = fields.Boolean(string="Verificar el tipo de Hexágono")
     check_gramaje = fields.Boolean(string="Check de gramaje")
     check_medidas_bloque = fields.Boolean(string="Validar medidas del bloque gigante")
@@ -28,58 +28,27 @@ class MrpWorkorder(models.Model):
     check_marcado_etiquetado = fields.Boolean(string="Validar marcado y etiquetado")
     check_seguridad_amarre = fields.Boolean(string="Check de seguridad en el amarre de paquetes")
 
-    # Método para determinar qué campos se deben mostrar según el workcenter_code
+    # Diccionario de checks de calidad por código de workcenter
+    quality_checks = {
+        'OCT': ['check_tipo_hexagono', 'check_gramaje', 'check_medidas_bloque', 'check_consistencia_lote'],
+        'COR': ['check_precision_cortes', 'check_numero_cortes'],
+        'PEG': ['check_alineacion_reticula', 'check_calidad_pegado', 'check_resistencia_pegado'],
+        'LAM': ['check_apariencia_tablero', 'check_pandeo', 'check_espesor_medidas', 'check_cantidad_pegamento'],
+        'REM': ['check_acabado_superficial', 'check_armado_piezas', 'check_marcado_etiquetado', 'check_seguridad_amarre']
+    }
+
+    # Método para activar los campos booleanos de calidad según el código del centro de trabajo
     @api.depends('workcenter_id', 'workcenter_id.code')
     def _compute_visible_checks(self):
         for record in self:
             workcenter_code = record.workcenter_id.code if record.workcenter_id else None
+            record.update({check: False for checks in self.quality_checks.values() for check in checks})
 
-            # Inicializar todos los checks como False
-            record.update({
-                'check_tipo_hexagono': False,
-                'check_gramaje': False,
-                'check_medidas_bloque': False,
-                'check_consistencia_lote': False,
-                'check_precision_cortes': False,
-                'check_numero_cortes': False,
-                'check_alineacion_reticula': False,
-                'check_calidad_pegado': False,
-                'check_resistencia_pegado': False,
-                'check_apariencia_tablero': False,
-                'check_pandeo': False,
-                'check_espesor_medidas': False,
-                'check_cantidad_pegamento': False,
-                'check_acabado_superficial': False,
-                'check_armado_piezas': False,
-                'check_marcado_etiquetado': False,
-                'check_seguridad_amarre': False,
-            })
+            # Activar solo los checks específicos del workcenter actual
+            if workcenter_code in self.quality_checks:
+                for check in self.quality_checks[workcenter_code]:
+                    record[check] = True
 
-            # Activar los checks correspondientes al workcenter_code
-            if workcenter_code == 'OCT':
-                record.check_tipo_hexagono = True
-                record.check_gramaje = True
-                record.check_medidas_bloque = True
-                record.check_consistencia_lote = True
-            elif workcenter_code == 'COR':
-                record.check_precision_cortes = True
-                record.check_numero_cortes = True
-            elif workcenter_code == 'PEG':
-                record.check_alineacion_reticula = True
-                record.check_calidad_pegado = True
-                record.check_resistencia_pegado = True
-            elif workcenter_code == 'LAM':
-                record.check_apariencia_tablero = True
-                record.check_pandeo = True
-                record.check_espesor_medidas = True
-                record.check_cantidad_pegamento = True
-            elif workcenter_code == 'REM':
-                record.check_acabado_superficial = True
-                record.check_armado_piezas = True
-                record.check_marcado_etiquetado = True
-                record.check_seguridad_amarre = True
-
-    # Computed field to determine visibility
     visible_checks = fields.Boolean(compute='_compute_visible_checks', store=True)
 
     @api.model
@@ -95,6 +64,41 @@ class MrpWorkorder(models.Model):
             ('workcenter_id', '=', workorder.workcenter_id.id)
         ])
 
+        default_fields_mapping = {
+            'OCT': [
+                ('Lote de Entrada del Rollo', 'char'),
+                ('Peso del Rollo', 'char'),
+                ('Gramaje del Rollo', 'char'),
+                ('Medidas del Rollo', 'char'),
+                ('Número de Corridas', 'char'),
+                ('Tipo de Hexágono de Salida', 'char')
+            ],
+            'COR': [
+                ('Número de Cortes por turno', 'char'),
+                ('Número de Cortes de cada bloque', 'char')
+            ],
+            'PEG': [
+                ('Retículas pegadas por turno', 'char')
+            ],
+            'LAM': [
+                ('Lote de Retícula de Entrada', 'char'),
+                ('Lote de Rollo Superior de Entrada', 'char'),
+                ('Lote de Rollo Inferior de Entrada', 'char'),
+                ('Cantidad de Metros Lineales por turno', 'char'),
+                ('Especificación del material laminado', 'char'),
+                ('Código de producto', 'char'),
+                ('Merma generada', 'char'),
+                ('Kilogramos de Pegamento utilizado', 'char')
+            ],
+            'REM': [
+                ('Número de Tarimas de PT por turno', 'char'),
+                ('Especificación del material laminado', 'char'),
+                ('Código de producto', 'char'),
+                ('Número de tarimas producidas de la Orden de producción', 'char'),
+                ('Merma Generada', 'char')
+            ]
+        }
+
         if field_configs:
             for config in field_configs:
                 WorkorderData.create({
@@ -103,48 +107,8 @@ class MrpWorkorder(models.Model):
                     'field_type': config.field_type,
                 })
         else:
-            # No hay configuraciones, usar campos predeterminados del código
             workcenter_code = workorder.workcenter_id.code
-            if workcenter_code == 'OCT':
-                default_fields = [
-                    ('Lote de Entrada del Rollo', 'char'),
-                    ('Peso del Rollo', 'char'),
-                    ('Gramaje del Rollo', 'char'),
-                    ('Medidas del Rollo', 'char'),
-                    ('Número de Corridas', 'char'),
-                    ('Tipo de Hexágono de Salida', 'char'),
-                ]
-            elif workcenter_code == 'COR':
-                default_fields = [
-                    ('Número de Cortes por turno', 'char'),
-                    ('Número de Cortes de cada bloque', 'char')
-                ]
-            elif workcenter_code == 'PEG':
-                default_fields = [
-                    ('Retículas pegadas por turno', 'char'),
-                ]
-            elif workcenter_code == 'LAM':
-                default_fields = [
-                    ('Lote de Retícula de Entrada', 'char'),
-                    ('Lote de Rollo Superior de Entrada', 'char'),
-                    ('Lote de Rollo Inferior de Entrada', 'char'),
-                    ('Cantidad de Metros Lineales por turno', 'char'),
-                    ('Especificación del material laminado', 'char'),
-                    ('Código de producto', 'char'),
-                    ('Merma generada', 'char'),
-                    ('Kilogramos de Pegamento utilizado', 'char'),
-                ]
-            elif workcenter_code == 'REM':
-                default_fields = [
-                    ('Número de Tarimas de PT por turno', 'char'),
-                    ('Especificación del material laminado', 'char'),
-                    ('Código de producto', 'char'),
-                    ('Número de tarimas producidas de la Orden de producción', 'char'),
-                    ('Merma Generada', 'char')
-                ]
-            else:
-                default_fields = []
-
+            default_fields = default_fields_mapping.get(workcenter_code, [])
             for field_name, field_type in default_fields:
                 WorkorderData.create({
                     'workorder_id': workorder.id,
