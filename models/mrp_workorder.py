@@ -13,64 +13,47 @@ class MrpWorkorder(models.Model):
     check_gramaje = fields.Boolean(string="Check de gramaje")
     check_medidas_bloque = fields.Boolean(string="Validar medidas del bloque gigante")
     check_consistencia_lote = fields.Boolean(string="Check de consistencia del lote")
-
     check_precision_cortes = fields.Boolean(string="Check de precisión en los cortes")
     check_numero_cortes = fields.Boolean(string="Validar número de cortes correctos por bloque")
-
     check_alineacion_reticula = fields.Boolean(string="Verificar alineación de la retícula")
     check_calidad_pegado = fields.Boolean(string="Check de calidad del pegado")
     check_resistencia_pegado = fields.Boolean(string="Validar resistencia del pegado")
-
     check_apariencia_tablero = fields.Boolean(string="Check de apariencia del tablero laminado")
     check_pandeo = fields.Boolean(string="Verificar pandeo")
     check_espesor_medidas = fields.Boolean(string="Validar espesor y medidas")
     check_cantidad_pegamento = fields.Boolean(string="Check de cantidad de pegamento")
-
     check_acabado_superficial = fields.Boolean(string="Check de acabado superficial")
     check_armado_piezas = fields.Boolean(string="Verificar armado de las piezas")
     check_marcado_etiquetado = fields.Boolean(string="Validar marcado y etiquetado")
     check_seguridad_amarre = fields.Boolean(string="Check de seguridad en el amarre de paquetes")
 
-    # Diccionario de checks de calidad por código de workcenter
-    quality_checks = {
-        'OCT': ['check_tipo_hexagono', 'check_gramaje', 'check_medidas_bloque', 'check_consistencia_lote'],
-        'COR': ['check_precision_cortes', 'check_numero_cortes'],
-        'PEG': ['check_alineacion_reticula', 'check_calidad_pegado', 'check_resistencia_pegado'],
-        'LAM': ['check_apariencia_tablero', 'check_pandeo', 'check_espesor_medidas', 'check_cantidad_pegamento'],
-        'REM': ['check_acabado_superficial', 'check_armado_piezas', 'check_marcado_etiquetado', 'check_seguridad_amarre']
-    }
-
-    # Método para activar los campos booleanos de calidad según el código del centro de trabajo
-    @api.depends('workcenter_id', 'workcenter_id.code')
+    # Método para activar todos los campos de calidad para cualquier estación de trabajo
+    @api.depends('workcenter_id')
     def _compute_visible_checks(self):
         for record in self:
-            workcenter_code = record.workcenter_id.code if record.workcenter_id else None
-
-            # Log detallado para depurar el problema de visibilidad
             _logger.debug(f"Procesando MrpWorkorder ID: {record.id}")
-            _logger.debug(f"workcenter_id: {record.workcenter_id}")
-            _logger.debug(f"workcenter_id.code: {workcenter_code}")
 
-            if not record.workcenter_id:
-                _logger.warning(f"El workorder con ID {record.id} no tiene un workcenter_id asignado.")
-                continue
-
-            if not workcenter_code:
-                _logger.warning(f"El workorder con ID {record.id} tiene un workcenter_id sin código.")
-                continue
-
-            # Desactivar todos los checks
-            record.update({check: False for checks in self.quality_checks.values() for check in checks})
-            _logger.debug("Todos los campos de calidad han sido desactivados")
-
-            # Activar solo los checks específicos del workcenter actual
-            if workcenter_code in self.quality_checks:
-                _logger.debug(f"Activando campos de calidad para workcenter_code: {workcenter_code}")
-                for check in self.quality_checks[workcenter_code]:
-                    record[check] = True
-                    _logger.debug(f"Campo activado: {check}")
-            else:
-                _logger.debug(f"No se encontraron campos de calidad para workcenter_code: {workcenter_code}")
+            # Activar todos los campos de calidad
+            record.update({
+                'check_tipo_hexagono': True,
+                'check_gramaje': True,
+                'check_medidas_bloque': True,
+                'check_consistencia_lote': True,
+                'check_precision_cortes': True,
+                'check_numero_cortes': True,
+                'check_alineacion_reticula': True,
+                'check_calidad_pegado': True,
+                'check_resistencia_pegado': True,
+                'check_apariencia_tablero': True,
+                'check_pandeo': True,
+                'check_espesor_medidas': True,
+                'check_cantidad_pegamento': True,
+                'check_acabado_superficial': True,
+                'check_armado_piezas': True,
+                'check_marcado_etiquetado': True,
+                'check_seguridad_amarre': True
+            })
+            _logger.info(f"Todos los campos de calidad se han activado para MrpWorkorder ID: {record.id}")
 
     visible_checks = fields.Boolean(compute='_compute_visible_checks', store=True)
 
