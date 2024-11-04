@@ -1,4 +1,4 @@
-<!-- views/panelhex_workcenter_field_config_views.xml -->
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_workcenter_field_config_tree" model="ir.ui.view">
         <field name="name">workcenter.field.config.tree</field>
