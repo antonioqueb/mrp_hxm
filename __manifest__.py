@@ -1,5 +1,5 @@
 {
-    'name': 'PanelHex MRP Extension',
+    'name': 'Hexagonos MRP Extension',
     'version': '1.0',
     'category': 'Manufacturing',
     'summary': 'Extensión del módulo MRP para PanelHex',

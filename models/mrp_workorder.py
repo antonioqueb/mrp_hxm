@@ -31,11 +31,6 @@ class MrpWorkorder(models.Model):
     check_marcado_etiquetado = fields.Boolean(string="Validar marcado y etiquetado", default=False)
     check_seguridad_amarre = fields.Boolean(string="Check de seguridad en el amarre de paquetes", default=False)
 
-
-   
-
-    visible_checks = fields.Boolean(compute='_compute_visible_checks', store=True)
-
     @api.model
     def create(self, vals):
         res = super(MrpWorkorder, self).create(vals)
