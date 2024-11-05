@@ -32,33 +32,7 @@ class MrpWorkorder(models.Model):
     check_seguridad_amarre = fields.Boolean(string="Check de seguridad en el amarre de paquetes", default=False)
 
 
-    # Método para activar todos los campos de calidad para cualquier estación de trabajo
-    @api.depends('workcenter_id')
-    def _compute_visible_checks(self):
-        for record in self:
-            _logger.debug(f"Procesando MrpWorkorder ID: {record.id}")
-
-            # Activar todos los campos de calidad
-            record.update({
-                'check_tipo_hexagono': True,
-                'check_gramaje': True,
-                'check_medidas_bloque': True,
-                'check_consistencia_lote': True,
-                'check_precision_cortes': True,
-                'check_numero_cortes': True,
-                'check_alineacion_reticula': True,
-                'check_calidad_pegado': True,
-                'check_resistencia_pegado': True,
-                'check_apariencia_tablero': True,
-                'check_pandeo': True,
-                'check_espesor_medidas': True,
-                'check_cantidad_pegamento': True,
-                'check_acabado_superficial': True,
-                'check_armado_piezas': True,
-                'check_marcado_etiquetado': True,
-                'check_seguridad_amarre': True
-            })
-            _logger.info(f"Todos los campos de calidad se han activado para MrpWorkorder ID: {record.id}")
+   
 
     visible_checks = fields.Boolean(compute='_compute_visible_checks', store=True)
 
