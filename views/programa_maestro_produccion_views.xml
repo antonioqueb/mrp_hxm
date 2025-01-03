@@ -11,7 +11,11 @@
                     <field name="product_id"/>
                     <field name="fecha_inicio"/>
                     <field name="fecha_fin"/>
-                    <field name="estado"/>
+                     <field name="estado" widget="badge" decoration-success="estado == 'terminado'"
+                        decoration-info="estado == 'planificado'"
+                        decoration-warning="estado == 'en_proceso'"
+                        decoration-danger="estado == 'cancelado'"
+                        decoration-muted="estado == 'borrador'"/>
                     <field name="safety_stock"/>
                     <field name="critical_stock"/>
                     <field name="demand_forecast"/>
@@ -52,37 +56,43 @@
                                 <field name="name" placeholder="Nombre del Programa"/>
                             </h1>
                         </div>
-                        <group>
-                            <group string="Información del Programa">
-                                <field name="product_id"/>
-                                <field name="fecha_inicio"/>
-                                <field name="fecha_fin"/>
-                                <field name="safety_stock"/>
-                                <field name="critical_stock"/>
-                            </group>
-                            <group string="Cálculos">
-                                <field name="demand_forecast"/>
-                                <field name="suggested_replenishment"/>
-                                <field name="forecasted_stock"/>
-                                <field name="daily_average_consumption" readonly="1"/>
-                                <field name="qty_available" readonly="1"/>
-                                <field name="coverage_days" readonly="1"/>
-                                <field name="demand_stock_difference" readonly="1"/>
-                            </group>
-                        </group>
-                        <notebook>
+                         <notebook>
+                            <page string="Información General">
+                                <group>
+                                    <group string="Datos Principales">
+                                         <field name="product_id"/>
+                                        <field name="fecha_inicio"/>
+                                        <field name="fecha_fin"/>
+                                    </group>
+                                    <group string="Stock">
+                                        <field name="safety_stock"/>
+                                        <field name="critical_stock"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Cálculos">
+                                 <group>
+                                    <group>
+                                        <field name="demand_forecast" readonly="1"/>
+                                        <field name="suggested_replenishment" readonly="1"/>
+                                        <field name="forecasted_stock" readonly="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="daily_average_consumption" readonly="1"/>
+                                        <field name="qty_available"/>
+                                        <field name="coverage_days" readonly="1"/>
+                                        <field name="demand_stock_difference" readonly="1"/>
+                                     </group>
+                                </group>
+                            </page>
                             <page string="Datos Mensuales">
                                 <field name="monthly_data">
                                     <tree editable="bottom">
                                         <field name="date"/>
                                         <field name="demand_forecast"/>
-                                        <field name="safety_stock"/>
                                         <field name="suggested_replenishment"/>
                                         <field name="forecasted_stock"/>
-                                        <field name="qty_available" readonly="1"/>
-                                        <field name="incoming_qty"/>
-                                        <field name="outgoing_qty"/>
-                                        <field name="virtual_available"/>
+                                       <field name="qty_available"/>
                                     </tree>
                                     <form string="Datos Mensuales">
                                         <group>
@@ -90,14 +100,10 @@
                                             <field name="product_id" readonly="1"/>
                                         </group>
                                         <group>
-                                            <field name="qty_available" readonly="1"/>
-                                            <field name="incoming_qty" readonly="1"/>
-                                            <field name="outgoing_qty" readonly="1"/>
-                                            <field name="virtual_available" readonly="1"/>
+                                            <field name="qty_available"/>
                                         </group>
                                         <group>
                                             <field name="demand_forecast"/>
-                                            <field name="safety_stock"/>
                                             <field name="suggested_replenishment"/>
                                             <field name="forecasted_stock"/>
                                         </group>
@@ -119,7 +125,7 @@
         </record>
 
         <!-- Kanban View with Improved Display -->
-        <record id="view_programa_maestro_produccion_kanban" model="ir.ui.view">
+       <record id="view_programa_maestro_produccion_kanban" model="ir.ui.view">
             <field name="name">panelhex.programa.maestro.produccion.kanban</field>
             <field name="model">panelhex.programa.maestro.produccion</field>
             <field name="arch" type="xml">
@@ -132,17 +138,17 @@
                     <field name="demand_forecast"/>
                     <field name="suggested_replenishment"/>
                     <field name="forecasted_stock"/>
-                    <field name="qty_available"/>
+                     <field name="qty_available"/>
                     <field name="daily_average_consumption"/>
                     <field name="coverage_days" readonly="1"/>
                     <field name="demand_stock_difference"/>
 
                     <templates>
                         <t t-name="kanban-box">
-                            <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)} oe_kanban_global_click">
+                             <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.estado.raw_value)} oe_kanban_global_click">
                                 <div class="oe_kanban_details">
                                     <div class="oe_kanban_content">
-                                        <strong><field name="name"/></strong>
+                                        <strong class="o_kanban_record_name"><field name="name"/></strong>
                                         <div class="oe_kanban_record_title">
                                             <field name="product_id" widget="badge"/>
                                         </div>
@@ -163,18 +169,18 @@
                                                 <i class="fa fa-cubes me-1" title="Stock Previsto"></i>
                                                 <span>Stock Previsto: <field name="forecasted_stock"/></span>
                                             </div>
-                                            <div class="o_indicator">
-                                                <i class="fa fa-calculator me-1" title="Consumo Diario"></i>
-                                                <span>Consumo Diario: <field name="daily_average_consumption"/></span>
+                                              <div class="o_indicator">
+                                                <i class="fa fa-archive me-1" title="Stock a Mano"></i>
+                                                <span>Stock a Mano: <field name="qty_available"/></span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="oe_kanban_footer">
-                                        <div class="o_indicator">
-                                            <i class="fa fa-archive me-1" title="Stock a Mano"></i>
-                                            <span>Stock a Mano: <field name="qty_available"/></span>
+                                         <div class="o_indicator">
+                                            <i class="fa fa-calculator me-1" title="Consumo Diario"></i>
+                                                <span>Consumo Diario: <field name="daily_average_consumption"/></span>
                                         </div>
-                                        <div class="o_indicator">
+                                         <div class="o_indicator">
                                             <i class="fa fa-exclamation-circle me-1" title="Stock Crítico"></i>
                                             <span>Stock Crítico: <field name="critical_stock"/></span>
                                         </div>
@@ -182,7 +188,7 @@
                                             <i class="fa fa-calendar-check-o me-1" title="Días de Cobertura"></i>
                                             <span>Días de Cobertura: <field name="coverage_days"/></span>
                                         </div>
-                                        <div class="o_indicator">
+                                         <div class="o_indicator">
                                             <i class="fa fa-balance-scale me-1" title="Diferencia"></i>
                                             <span>Diferencia: <field name="demand_stock_difference"/></span>
                                         </div>
@@ -194,6 +200,13 @@
                             </div>
                         </t>
                     </templates>
+                     <xpath expr="//kanban/templates/t/div/div[1]/strong" position="attributes">
+                        <attribute name="style">display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;</attribute>
+                    </xpath>
                 </kanban>
             </field>
         </record>

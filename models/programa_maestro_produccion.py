@@ -172,6 +172,7 @@ class ProgramaMaestroProduccion(models.Model):
 
         self.write({'estado': 'planificado'})
 
+
 class ProgramaMaestroProduccionMensual(models.Model):
     _name = 'panelhex.programa.maestro.produccion.mensual'
     _description = 'Datos Mensuales del Plan Maestro'
@@ -191,8 +192,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
 
     @api.depends('plan_id.fecha_inicio', 'plan_id.fecha_fin', 'date', 'product_id', 'plan_id.safety_stock')
     def _compute_monthly_data(self):
-        records = self.sorted(lambda r: r.date)
-        for idx, record in enumerate(records):
+        for record in self:
             if not record.date or not record.product_id or not record.plan_id.fecha_inicio or not record.plan_id.fecha_fin:
                 record.demand_forecast = 0.0
                 record.suggested_replenishment = 0.0
@@ -201,7 +201,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 record.incoming_qty = 0.0
                 record.outgoing_qty = 0.0
                 record.virtual_available = 0.0
-                _logger.info(f"Registro {idx}: Datos incompletos, estableciendo todos los valores a 0.0")
+                _logger.info(f"Registro {record.id}: Datos incompletos, estableciendo todos los valores a 0.0")
                 continue
 
             start_date = record.plan_id.fecha_inicio
@@ -222,32 +222,35 @@ class ProgramaMaestroProduccionMensual(models.Model):
             delivered_qty = sum(sales_lines.mapped('qty_delivered'))
 
             # Calcular la Demanda Pronosticada como la cantidad confirmada menos la cantidad entregada
-            record.demand_forecast = max(0, confirmed_qty - delivered_qty)
-            _logger.info(f"Registro {idx}: Cantidad Confirmada: {confirmed_qty}, Cantidad Entregada: {delivered_qty}, Demanda Pronosticada: {record.demand_forecast}")
+            demand = max(0, confirmed_qty - delivered_qty)
+            record.demand_forecast = demand
+            _logger.info(f"Registro {record.id}: Cantidad Confirmada: {confirmed_qty}, Cantidad Entregada: {delivered_qty}, Demanda Pronosticada: {record.demand_forecast}")
 
             # Obtener el stock disponible actual
             product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
             stock_actual = product.qty_available
 
             # Calcular el stock neto después de la demanda pronosticada
-            net_stock = stock_actual - record.demand_forecast
+            net_stock = stock_actual - demand
 
-            # Calcular el reabastecimiento necesario para cumplir con el stock de seguridad
+             # Calcular el reabastecimiento necesario para cumplir con el stock de seguridad
             reabastecimiento_para_seguridad = max(0, record.plan_id.safety_stock - net_stock)
 
             # Reabastecimiento sugerido es la demanda pronosticada más lo necesario para llegar al stock de seguridad
-            record.suggested_replenishment = max(0, record.demand_forecast + reabastecimiento_para_seguridad - stock_actual)
+            suggested_replenishment = max(0, demand + reabastecimiento_para_seguridad - stock_actual)
+            record.suggested_replenishment = suggested_replenishment
 
             # Actualizar campos relacionados con el stock
-            record.forecasted_stock = net_stock + record.suggested_replenishment
-            record.qty_available = record.forecasted_stock
-            record.incoming_qty = record.suggested_replenishment
+            forecasted_stock = net_stock + suggested_replenishment
+            record.forecasted_stock = forecasted_stock
+            record.qty_available = stock_actual # Conserva el _stock_ original
+            record.incoming_qty = suggested_replenishment
             record.outgoing_qty = 0.0  # No hay cantidades futuras involucradas
-            record.virtual_available = record.forecasted_stock
+            record.virtual_available = forecasted_stock
 
-            _logger.info(f"Registro {idx}: Fecha: {record.date}")
-            _logger.info(f"Registro {idx}: Stock Actual: {stock_actual}")
-            _logger.info(f"Registro {idx}: Stock Neto: {net_stock}")
-            _logger.info(f"Registro {idx}: Reabastecimiento para Seguridad: {reabastecimiento_para_seguridad}")
-            _logger.info(f"Registro {idx}: Reabastecimiento Sugerido: {record.suggested_replenishment}")
-            _logger.info(f"Registro {idx}: Stock Previsto: {record.forecasted_stock}")
+            _logger.info(f"Registro {record.id}: Fecha: {record.date}")
+            _logger.info(f"Registro {record.id}: Stock Actual: {stock_actual}")
+            _logger.info(f"Registro {record.id}: Stock Neto: {net_stock}")
+            _logger.info(f"Registro {record.id}: Reabastecimiento para Seguridad: {reabastecimiento_para_seguridad}")
+            _logger.info(f"Registro {record.id}: Reabastecimiento Sugerido: {record.suggested_replenishment}")
+            _logger.info(f"Registro {record.id}: Stock Previsto: {record.forecasted_stock}")
