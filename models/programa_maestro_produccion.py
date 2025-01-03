@@ -266,19 +266,3 @@ class ProgramaMaestroProduccionMensual(models.Model):
             _logger.info(f"Registro {record.id}: Reabastecimiento para Seguridad: {reabastecimiento_para_seguridad}")
             _logger.info(f"Registro {record.id}: Reabastecimiento Sugerido: {record.suggested_replenishment}")
             _logger.info(f"Registro {record.id}: Stock Previsto: {record.forecasted_stock}")
-
-
-class SaleOrder(models.Model):
-    _inherit = 'sale.order'
-
-    def write(self, vals):
-        res = super(SaleOrder, self).write(vals)
-        if vals.get('state') == 'sale':
-            for line in self.order_line:
-                # Invalida el cache de los campos relacionados con la demanda
-                line.product_id.invalidate_cache(fnames=['demand_forecast','total_demand_forecast', 'suggested_replenishment', 'forecasted_stock','qty_available'])
-                # Busca los planes maestros que usan este producto y fuerza el recálculo
-                plans = self.env['panelhex.programa.maestro.produccion'].search([('product_id', '=', line.product_id.id)])
-                for plan in plans:
-                    plan.monthly_data.invalidate_cache()
-        return res
