@@ -131,7 +131,6 @@
             <field name="arch" type="xml">
                 <kanban>
                     <field name="name"/>
-                    <field name="product_id"/>
                     <field name="fecha_inicio"/>
                     <field name="fecha_fin"/>
                     <field name="estado"/>
@@ -149,9 +148,6 @@
                                 <div class="oe_kanban_details">
                                     <div class="oe_kanban_content">
                                         <strong class="o_kanban_record_name"><field name="name"/></strong>
-                                        <div class="oe_kanban_record_title">
-                                            <field name="product_id" widget="badge"/>
-                                        </div>
                                         <div class="oe_kanban_indicators">
                                             <div class="o_indicator">
                                                 <i class="fa fa-calendar me-1" title="Fechas"></i>
