@@ -65,8 +65,11 @@ class ProgramaMaestroProduccion(models.Model):
     def _compute_stock_fields(self):
         for record in self:
             if record.product_id:
-                product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
-                record.qty_available = product.qty_available
+                qty = 0
+                for warehouse in self.env['stock.warehouse'].search([]):
+                    product = record.product_id.with_context(company_id=self.env.company.id, location=warehouse.lot_stock_id.id)
+                    qty += product.qty_available
+                record.qty_available = qty
             else:
                 record.qty_available = 0.0
 
@@ -192,7 +195,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
 
     @api.depends('plan_id.fecha_inicio', 'plan_id.fecha_fin', 'date', 'product_id', 'plan_id.safety_stock')
     def _compute_monthly_data(self):
-        for record in self:
+         for record in self:
             if not record.date or not record.product_id or not record.plan_id.fecha_inicio or not record.plan_id.fecha_fin:
                 record.demand_forecast = 0.0
                 record.suggested_replenishment = 0.0
@@ -207,43 +210,49 @@ class ProgramaMaestroProduccionMensual(models.Model):
             start_date = record.plan_id.fecha_inicio
             end_date = record.plan_id.fecha_fin
 
-            # Obtener las líneas de órdenes de venta confirmadas en el rango de fechas
+            # Buscar líneas de venta en todos los almacenes
             sales_lines = self.env['sale.order.line'].search([
                 ('product_id', '=', record.product_id.id),
                 ('order_id.date_order', '>=', start_date),
                 ('order_id.date_order', '<=', end_date),
-                ('order_id.state', '=', 'sale')  # Solo órdenes confirmadas
+                ('order_id.state', '=', 'sale')
             ])
 
-            # Calcular la cantidad total confirmada para entregar (Demanda Pronosticada)
+
+            # Calcular la cantidad total confirmada para entregar
             confirmed_qty = sum(sales_lines.mapped('product_uom_qty'))
 
             # Calcular la cantidad entregada
             delivered_qty = sum(sales_lines.mapped('qty_delivered'))
-
-            # Calcular la Demanda Pronosticada como la cantidad confirmada menos la cantidad entregada
+            
+            # Calcular la Demanda Pronosticada
             demand = max(0, confirmed_qty - delivered_qty)
             record.demand_forecast = demand
             _logger.info(f"Registro {record.id}: Cantidad Confirmada: {confirmed_qty}, Cantidad Entregada: {delivered_qty}, Demanda Pronosticada: {record.demand_forecast}")
 
-            # Obtener el stock disponible actual
-            product = record.product_id.with_context(company_id=self.env.company.id, location_id=False)
-            stock_actual = product.qty_available
+            # Calcular el stock actual en todos los almacenes
+            qty = 0
+            for warehouse in self.env['stock.warehouse'].search([]):
+                product = record.product_id.with_context(company_id=self.env.company.id, location=warehouse.lot_stock_id.id)
+                qty += product.qty_available
+            stock_actual = qty
+
 
             # Calcular el stock neto después de la demanda pronosticada
             net_stock = stock_actual - demand
 
-             # Calcular el reabastecimiento necesario para cumplir con el stock de seguridad
+            # Calcular el reabastecimiento necesario para cumplir con el stock de seguridad
             reabastecimiento_para_seguridad = max(0, record.plan_id.safety_stock - net_stock)
-
-            # Reabastecimiento sugerido es la demanda pronosticada más lo necesario para llegar al stock de seguridad
+            
+           # Reabastecimiento sugerido
             suggested_replenishment = max(0, demand + reabastecimiento_para_seguridad - stock_actual)
             record.suggested_replenishment = suggested_replenishment
+
 
             # Actualizar campos relacionados con el stock
             forecasted_stock = net_stock + suggested_replenishment
             record.forecasted_stock = forecasted_stock
-            record.qty_available = stock_actual # Conserva el _stock_ original
+            record.qty_available = stock_actual  # Conserva el stock original
             record.incoming_qty = suggested_replenishment
             record.outgoing_qty = 0.0  # No hay cantidades futuras involucradas
             record.virtual_available = forecasted_stock
