@@ -173,7 +173,14 @@ class ProgramaMaestroProduccion(models.Model):
                     })
 
         self.write({'estado': 'planificado'})
-
+    
+    @api.model
+    def _init_existing_sales(self):
+        _logger.info("Inicializando la demanda de órdenes de venta preexistentes.")
+        plans = self.search([])
+        for plan in plans:
+            plan.monthly_data._compute_monthly_data()
+        _logger.info("Demanda de órdenes de venta preexistentes inicializada.")
 
 class ProgramaMaestroProduccionMensual(models.Model):
     _name = 'panelhex.programa.maestro.produccion.mensual'
@@ -266,3 +273,16 @@ class ProgramaMaestroProduccionMensual(models.Model):
             _logger.info(f"Registro {record.id}: Reabastecimiento para Seguridad: {reabastecimiento_para_seguridad}")
             _logger.info(f"Registro {record.id}: Reabastecimiento Sugerido: {record.suggested_replenishment}")
             _logger.info(f"Registro {record.id}: Stock Previsto: {record.forecasted_stock}")
+
+
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
+
+    @api.onchange('state')
+    def _onchange_state_sale(self):
+        if self.state == 'sale':
+            for line in self.order_line:
+                # Busca los planes maestros que usan este producto y fuerza el recálculo
+                plans = self.env['panelhex.programa.maestro.produccion'].search([('product_id', '=', line.product_id.id)])
+                for plan in plans:
+                    plan.monthly_data._compute_monthly_data()
