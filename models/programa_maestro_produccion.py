@@ -1,4 +1,3 @@
-# models/programa_maestro_produccion.py
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError, UserError
 from dateutil.relativedelta import relativedelta
@@ -185,7 +184,8 @@ class ProgramaMaestroProduccionMensual(models.Model):
     date = fields.Date(string='Mes', required=True)
     product_id = fields.Many2one('product.product', string='Producto', required=True)
     safety_stock = fields.Float(string='Stock de Seguridad', related='plan_id.safety_stock', readonly=False)
-    demand_forecast = fields.Float(string='Demanda Pronosticada', compute='_compute_monthly_data')
+    demand_forecast = fields.Float(string='Demanda Pronosticada Pendiente', compute='_compute_monthly_data')
+    total_demand_forecast = fields.Float(string='Demanda Pronosticada Total', compute='_compute_monthly_data')
     suggested_replenishment = fields.Float(string='Reabastecimiento Sugerido', compute='_compute_monthly_data')
     forecasted_stock = fields.Float(string='Stock Previsto', compute='_compute_monthly_data')
     qty_available = fields.Float(string='Cantidad a mano', compute='_compute_monthly_data')
@@ -198,6 +198,7 @@ class ProgramaMaestroProduccionMensual(models.Model):
          for record in self:
             if not record.date or not record.product_id or not record.plan_id.fecha_inicio or not record.plan_id.fecha_fin:
                 record.demand_forecast = 0.0
+                record.total_demand_forecast = 0.0
                 record.suggested_replenishment = 0.0
                 record.forecasted_stock = 0.0
                 record.qty_available = 0.0
@@ -218,17 +219,19 @@ class ProgramaMaestroProduccionMensual(models.Model):
                 ('order_id.state', '=', 'sale')
             ])
 
-
             # Calcular la cantidad total confirmada para entregar
             confirmed_qty = sum(sales_lines.mapped('product_uom_qty'))
 
             # Calcular la cantidad entregada
             delivered_qty = sum(sales_lines.mapped('qty_delivered'))
             
-            # Calcular la Demanda Pronosticada
+            # Calcular la Demanda Pronosticada Pendiente (confirmada - entregada)
             demand = max(0, confirmed_qty - delivered_qty)
             record.demand_forecast = demand
-            _logger.info(f"Registro {record.id}: Cantidad Confirmada: {confirmed_qty}, Cantidad Entregada: {delivered_qty}, Demanda Pronosticada: {record.demand_forecast}")
+
+            # Calcular la Demanda Pronosticada Total (confirmada)
+            record.total_demand_forecast = max(0, confirmed_qty)
+            _logger.info(f"Registro {record.id}: Cantidad Confirmada: {confirmed_qty}, Cantidad Entregada: {delivered_qty}, Demanda Pronosticada Pendiente: {record.demand_forecast}, Demanda Pronosticada Total: {record.total_demand_forecast}")
 
             # Calcular el stock actual en todos los almacenes
             qty = 0

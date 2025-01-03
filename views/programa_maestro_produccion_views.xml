@@ -19,6 +19,7 @@
                     <field name="safety_stock"/>
                     <field name="critical_stock"/>
                     <field name="demand_forecast"/>
+                    <field name="total_demand_forecast"/>
                     <field name="suggested_replenishment"/>
                     <field name="forecasted_stock"/>
                     <field name="qty_available"/>
@@ -73,7 +74,8 @@
                             <page string="Cálculos">
                                  <group>
                                     <group>
-                                        <field name="demand_forecast" readonly="1"/>
+                                        <field name="demand_forecast" readonly="1" string="Demanda Pronosticada Pendiente"/>
+                                        <field name="total_demand_forecast" readonly="1" string="Demanda Pronosticada Total"/>
                                         <field name="suggested_replenishment" readonly="1"/>
                                         <field name="forecasted_stock" readonly="1"/>
                                     </group>
@@ -89,7 +91,8 @@
                                 <field name="monthly_data">
                                     <tree editable="bottom">
                                         <field name="date"/>
-                                        <field name="demand_forecast"/>
+                                        <field name="demand_forecast" string="Demanda Pronosticada Pendiente"/>
+                                        <field name="total_demand_forecast" string="Demanda Pronosticada Total"/>
                                         <field name="suggested_replenishment"/>
                                         <field name="forecasted_stock"/>
                                        <field name="qty_available"/>
@@ -103,7 +106,8 @@
                                             <field name="qty_available"/>
                                         </group>
                                         <group>
-                                            <field name="demand_forecast"/>
+                                            <field name="demand_forecast" string="Demanda Pronosticada Pendiente"/>
+                                            <field name="total_demand_forecast" string="Demanda Pronosticada Total"/>
                                             <field name="suggested_replenishment"/>
                                             <field name="forecasted_stock"/>
                                         </group>
@@ -135,6 +139,7 @@
                     <field name="fecha_fin"/>
                     <field name="estado"/>
                     <field name="demand_forecast"/>
+                    <field name="total_demand_forecast"/>
                     <field name="suggested_replenishment"/>
                     <field name="forecasted_stock"/>
                      <field name="qty_available"/>
@@ -155,7 +160,11 @@
                                             </div>
                                             <div class="o_indicator">
                                                 <i class="fa fa-bar-chart me-1" title="Demanda"></i>
-                                                <span>Demanda: <field name="demand_forecast"/></span>
+                                                <span>Demanda Pendiente: <field name="demand_forecast"/></span>
+                                            </div>
+                                            <div class="o_indicator">
+                                                <i class="fa fa-bar-chart me-1" title="Demanda Total"></i>
+                                                <span>Demanda Total: <field name="total_demand_forecast"/></span>
                                             </div>
                                             <div class="o_indicator">
                                                 <i class="fa fa-refresh me-1" title="Reabastecimiento"></i>
@@ -215,7 +224,8 @@
                 <graph string="Plan Maestro" type="bar">
                     <field name="date" interval="month"/>
                     <field name="suggested_replenishment" type="measure"/>
-                    <field name="demand_forecast" type="measure"/>
+                    <field name="demand_forecast" type="measure" string="Demanda Pronosticada Pendiente"/>
+                    <field name="total_demand_forecast" type="measure" string="Demanda Pronosticada Total"/>
                     <field name="forecasted_stock" type="measure"/>
                 </graph>
             </field>
